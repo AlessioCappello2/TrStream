@@ -20,11 +20,32 @@ services:
       - "9092:9092"
     networks:
       - app-tier
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 5s
+      retries: 12
+      start_period: 10s
+      timeout: 5s
+
+  kafka-config:
+    image: bitnamilegacy/kafka:4.0.0-debian-12-r10
+    container_name: kafka-config
+    depends_on:
+      - kafka
+    volumes:
+      - ./kafka-config:/scripts
+    entrypoint:
+      ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
+    networks:
+      - app-tier
+    restart:
+      no
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     ports:
       - 8080:8080
     environment:
@@ -50,10 +71,13 @@ services:
   faker-producer:
     build: ./src/producer
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+      kafka-config:
+        condition: service_completed_successfully
     environment:
       - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=trial01
+      - KAFKA_TOPIC=transactions-trial
     volumes: 
       - ./producer:/app
     networks:
@@ -62,12 +86,13 @@ services:
   transaction-consumer:
     build: ./src/consumer
     depends_on:
-      - kafka
-      - minio
-      - faker-producer
+      kafka:
+        condition: service_healthy
+      kafka-config:
+        condition: service_completed_successfully
     environment:
       - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=trial01
+      - KAFKA_TOPIC=transactions-trial
       - MINIO_ENDPOINT=http://minio:9000
       - MINIO_ACCESS_KEY=admin
       - MINIO_SECRET_KEY=admin12345

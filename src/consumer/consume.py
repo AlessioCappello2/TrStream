@@ -1,12 +1,18 @@
+####################################################################
+# IMPORTS #
+####################################################################
 import io 
 import os
 import time
 import boto3
 import signal
+import logging
 
 from kafka import KafkaConsumer
-from kafka.errors import NoBrokersAvailable
 
+####################################################################
+# Handle SIGTERM as an Exception
+####################################################################
 class TerminationException(Exception):
     pass
 
@@ -15,30 +21,35 @@ def handle_termination(signum, frame):
 
 signal.signal(signal.SIGTERM, handle_termination)
 
+####################################################################
+# Env variables
+####################################################################
 topic = os.getenv('KAFKA_TOPIC')
 broker = os.getenv('KAFKA_BROKER')
 bucket_name = 'mybucket'
 file_key = 'test.txt'
 
-while True:
-    try:
-        print("Trying to create consumer...", flush=True)
-        consumer = KafkaConsumer(bootstrap_servers=broker, auto_offset_reset='earliest', enable_auto_commit=True, group_id='transaction-consumers-test2')
-        consumer.subscribe(topics=[topic])
-        break
-    except NoBrokersAvailable:
-        print("Kafka not ready, retrying in 2 seconds...", flush=True)
-        time.sleep(2)
+####################################################################
+# Consumer instantiation
+####################################################################
+
+print("Consumer instantiation...", flush=True)
+consumer = KafkaConsumer(bootstrap_servers=broker, auto_offset_reset='earliest', group_id='transaction-consumers-test2')
+consumer.subscribe(topics=[topic])
 
 print("Consumer started, waiting for messages...", flush=True)
 s3 = boto3.client('s3', endpoint_url=os.environ['MINIO_ENDPOINT'], aws_access_key_id=os.environ['MINIO_ACCESS_KEY'], aws_secret_access_key=os.environ['MINIO_SECRET_KEY'])
 buffer = io.StringIO()
 
+#####################################################################
+# Transactions processing
+#####################################################################
 try:
     for message in consumer:
         m = message.value.decode()
         print(f"Received message {m}", flush=True)
         buffer.write(m + "\n")
+        consumer.commit()
 except TerminationException:
     print("Shutting down consumer and writing data to S3...", flush=True)
 finally:

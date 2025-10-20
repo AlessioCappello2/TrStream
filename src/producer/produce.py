@@ -1,24 +1,55 @@
+####################################################################
+# IMPORTS #
+####################################################################
 import os
+import json
 import time
-from kafka import KafkaProducer
-from kafka.errors import NoBrokersAvailable
+import signal
+import random
+import logging
 
+from kafka import KafkaProducer
+
+from __generate import Generator
+
+####################################################################
+# Handle SIGTERM as an Exception
+####################################################################
+class TerminationException(Exception):
+    pass
+
+def handle_termination(signum, frame):
+    raise TerminationException()
+
+signal.signal(signal.SIGTERM, handle_termination)
+
+####################################################################
+# Env variables
+####################################################################
 topic = os.getenv('KAFKA_TOPIC')
 broker = os.getenv('KAFKA_BROKER')
 
-while True:
-    try:
-        producer = KafkaProducer(bootstrap_servers=broker, linger_ms=1)
-        break
-    except NoBrokersAvailable:
-        print("Kafka not ready, retrying in 2 seconds...", flush=True)
-        time.sleep(2)
+####################################################################
+# Producer instantiation
+####################################################################
+print("Producer instantiation...")
+producer = KafkaProducer(bootstrap_servers=broker, 
+                            linger_ms=1, 
+                            value_serializer=lambda v: json.dumps(v).encode("utf-8"))
 
 print("Producer ready to send messages...", flush=True)
 
-for i in range(100):
-    print(f"Sending message no. {i}", flush=True)
-    producer.send(topic, value=f'Messaggio no. {i}'.encode())
-
-producer.close()
-print("Producer finished! Exiting the container now...", flush=True)
+#####################################################################
+# Transactions generation
+#####################################################################
+generator = Generator()
+try:
+    while True:
+        print(f"Sending a new message!", flush=True)
+        transaction = generator.generate_transaction()
+        producer.send(topic, value=transaction)
+        time.sleep(int(random.uniform(1, 20)))
+except TerminationException:
+    print("Shutting down producer...", flush=True)
+    producer.close()
+    print("Producer finished! Exiting the container now...", flush=True)
