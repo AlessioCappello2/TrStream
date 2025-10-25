@@ -63,13 +63,20 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     volumes:
       - ./minio/data:/data
     networks:
       - app-tier
 
-  faker-producer:
+  producer:
     build: ./src/producer
+    restart: unless-stopped
     depends_on:
       kafka:
         condition: service_healthy
@@ -83,8 +90,9 @@ services:
     networks:
       - app-tier
 
-  transaction-consumer:
+  consumer:
     build: ./src/consumer
+    restart: unless-stopped
     depends_on:
       kafka:
         condition: service_healthy
@@ -98,5 +106,17 @@ services:
       - MINIO_SECRET_KEY=admin12345
     volumes:
       - ./consumer:/app
+    networks:
+      - app-tier
+
+  partitioner:
+    build: ./src/partitioner
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin12345
     networks:
       - app-tier

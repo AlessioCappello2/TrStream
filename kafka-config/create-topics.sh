@@ -73,6 +73,6 @@ else
             --entity-name "$TOPIC" \
             --add-config retention.ms=$RETENTION_MS
     else
-        echo "Retention already set to $RETENTION_MS — no update needed."
+        echo "Retention already set to $RETENTION_MS: no update needed."
     fi
 fi

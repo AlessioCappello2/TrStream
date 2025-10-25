@@ -3,4 +3,4 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "produce.py"]
+CMD ["python", "producer.py"]
