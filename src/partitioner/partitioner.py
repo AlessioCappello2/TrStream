@@ -34,16 +34,17 @@ if __name__ == '__main__':
     s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     objects = s3.list_objects_v2(Bucket=bucket_src).get('Contents', [])
     parquets = [obj['Key'] for obj in objects if obj['Key'].endswith('.parquet')]
-    tables, i, n = [], 0, len(parquets)
+    tables, processed, i, n = [], [], 0, len(parquets)
 
     for key in parquets:
 
         response = s3.get_object(Bucket=bucket_src, Key=key)
         data = io.BytesIO(response["Body"].read())
         tables.append(pq.read_table(data))
+        processed.append({'Key': key})
         i += 1
 
-        if (i and not i % BATCH_SIZE) or (i == n-1):
+        if not i % BATCH_SIZE or i == n:
             table = pa.concat_tables(tables)
 
             # Cast string to timestamp
@@ -79,6 +80,5 @@ if __name__ == '__main__':
 
                     s3.put_object(Bucket=bucket_trg, Key=output_key, Body=buffer.getvalue())
 
-            tables = []
-        
-        # TODO s3.delete_object(Bucket=bucket_src, Key=key)
+            s3.delete_objects(Bucket=bucket_src, Delete={'Objects': processed})
+            tables, processed = [], []
