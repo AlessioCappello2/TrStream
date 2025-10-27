@@ -28,7 +28,7 @@ def generate_output_key(ttype: str, index: int):
 
 if __name__ == '__main__':
     s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    target_date = datetime.now() - timedelta(2)  # previous day
+    target_date = datetime.now() - timedelta(1)  # previous day
     day, month, year = target_date.day, target_date.month, target_date.year
     
     objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=f'year={year}/month={month:02d}/day={day:02d}/').get('Contents', [])
