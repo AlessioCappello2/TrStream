@@ -40,7 +40,7 @@ The pipeline ingests synthetic transactions from multiple Kafka producers and pr
                ┌───────────────────┴─────────────────────┐
                ▼                                         ▼
     ┌───────────────────────────┐          ┌────────────────────────────┐
-    |        Partitioner        |          |      Compacter (WIP)       |
+    |        Partitioner        |          |          Compacter         |
     | Reorganizes raw data into |          | Merges small Parquet files |
     | partitioned folders by    |          | and optimizes layout for   |
     | date + transaction type.  |          | analytical performance.    |
@@ -59,7 +59,7 @@ Data flow:
 - Kafka Producers simulate continuous transaction streams, generating fake transactions using [Faker](https://pypi.org/project/Faker/), where it is possible to force values and ranges.
 - Kafka Consumers process and persist them as raw Parquet files in MinIO, under the ```raw-data``` bucket.
 - Partitioner organizes data into logical folders, partitioning by date and transaction type (e.g. ```year=2025/month=10/day=27/transaction_type=CREDIT```).
-- Compacter merges fragmented Parquet files to improve query efficiency and storage layout (in progress).
+- Compacter merges fragmented Parquet files to improve query efficiency and storage layout.
 - Query Layer allows for SQL-based queries directly on partitioned and optimized Parquet data (in progress).
 
 ## Features
