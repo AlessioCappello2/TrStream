@@ -28,7 +28,7 @@ def generate_parquet_key():
     file_uuid = uuid.uuid4().hex[:8]
     file_key = f"part-{commit_time}-{file_uuid}.parquet"
 
-    return f"year={year}/month={month:02d}/day={day:02d}/transasction_type={ttype}/{file_key}"
+    return f"year={year}/month={month:02d}/day={day:02d}/transaction_type={ttype}/{file_key}"
 
 if __name__ == '__main__':
     s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
