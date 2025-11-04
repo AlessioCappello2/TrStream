@@ -11,7 +11,7 @@ The pipeline ingests synthetic transactions from multiple Kafka producers and pr
 
 ## Architecture
               ┌────────────────────────────────────────┐
-              │              Producers                 │
+              │               Producers                │
               │  Simulate live financial transactions  │
               └────────────────────────────────────────┘
                                    │
@@ -30,12 +30,12 @@ The pipeline ingests synthetic transactions from multiple Kafka producers and pr
           └───────────────────────────────────────────────┘
                                    │
                                    ▼
-         ┌────────────────────────────────────────────────┐
-         │                 MinIO (Data Lake)              │
-         │  S3-compatible object storage for:             │
-         │   • Raw data (raw-data/)                       │
-         │   • Partitioned data (tb-transactions/)        │
-         └────────────────────────────────────────────────┘
+            ┌────────────────────────────────────────────┐
+            |              MinIO (Data Lake)             │
+            |    S3-compatible object storage for:       │
+            │    • Raw data (raw-data/)                  │
+            |    • Partitioned data (tb-transactions/)   │
+            └────────────────────────────────────────────┘
                                    │
                ┌───────────────────┴─────────────────────┐
                ▼                                         ▼
@@ -49,11 +49,11 @@ The pipeline ingests synthetic transactions from multiple Kafka producers and pr
                 └────────────────────────────────────────┘             
                                    │
                                    ▼
-                      ┌────────────────────────────┐
-                      │       Query Layer (WIP)    │
-                      │  DuckDB / Athena-like SQL  │
-                      │ queries on optimized data. │
-                      └────────────────────────────┘
+                    ┌────────────────────────────┐
+                    │        Query Layer         │
+                    │  DuckDB / Athena-like SQL  │
+                    │ queries on optimized data. │
+                    └────────────────────────────┘
 
 Data flow:
 - Kafka Producers simulate continuous transaction streams, generating fake transactions using [Faker](https://pypi.org/project/Faker/), where it is possible to force values and ranges.
@@ -78,6 +78,7 @@ Data flow:
 | Processing    | Python, PyArrow, Boto3       |
 | Orchestration | Docker Compose               |
 | Monitoring    | Kafka UI (Provectus Labs)    |
+| Querying      | DuckDB, FastAPI              |
 
 Access:
 - Kafka UI: http://localhost:8080

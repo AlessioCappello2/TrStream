@@ -132,3 +132,17 @@ services:
       - MINIO_SECRET_KEY=admin12345
     networks:
       - app-tier  
+
+  querier:
+    build: ./src/querier
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin12345
+    ports:
+      - "8000:8000"
+    networks:
+      - app-tier  
