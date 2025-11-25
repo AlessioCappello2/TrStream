@@ -146,3 +146,12 @@ services:
       - "8000:8000"
     networks:
       - app-tier  
+
+  streamlit:
+    build: ./src/streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - querier
+    networks:
+      - app-tier

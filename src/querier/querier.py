@@ -5,7 +5,6 @@ import os
 import duckdb
 
 from fastapi import FastAPI, HTTPException
-
 from __utils import is_safe_query, QueryRequest, AliasRequest
 
 ####################################################################

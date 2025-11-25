@@ -19,11 +19,11 @@ minio_endpoint = os.environ['MINIO_ENDPOINT']
 access_key = os.environ['MINIO_ACCESS_KEY']
 secret_key = os.environ['MINIO_SECRET_KEY']
 bucket_name = 'tb-transactions'
-target_size = 256 * 1024 # 256 MB expressed in Bytes
+target_size = 256 * 1024 * 1024 # 256 MB expressed in Bytes
 
 
 def generate_output_key(ttype: str, index: int):
-    return f"year={year}/month={month:02d}/day={day:02d}/transasction_type={ttype}/part-{index:05d}.parquet"
+    return f"year={year}/month={month:02d}/day={day:02d}/transaction_type={ttype}/part-{index:05d}.parquet"
 
 
 if __name__ == '__main__':
@@ -32,7 +32,6 @@ if __name__ == '__main__':
     day, month, year = target_date.day, target_date.month, target_date.year
     
     objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=f'year={year}/month={month:02d}/day={day:02d}/').get('Contents', [])
-
     for ttype in ["CREDIT", "DEBIT", "REFUND"]:
         processed = []
         parquets = [obj for obj in objects if f"transaction_type={ttype}" in obj['Key']]

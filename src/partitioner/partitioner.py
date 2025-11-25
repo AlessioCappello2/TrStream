@@ -39,8 +39,10 @@ if __name__ == '__main__':
     for key in parquets:
 
         response = s3.get_object(Bucket=bucket_src, Key=key)
-        data = io.BytesIO(response["Body"].read())
-        tables.append(pq.read_table(data))
+        body = response["Body"].read()
+        if len(body) > 0:
+            data = io.BytesIO(body)
+            tables.append(pq.read_table(data))
         processed.append({'Key': key})
         i += 1
 

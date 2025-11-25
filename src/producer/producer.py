@@ -52,7 +52,7 @@ if __name__ == '__main__':
             print(f"Sending a new message!", flush=True)
             transaction = generator.generate_transaction()
             producer.send(topic, key=f"{transaction['transaction_type']}_{transaction['user_id']}".encode(), value=transaction)
-            time.sleep(int(random.uniform(1, 10)))
+            # time.sleep(int(random.uniform(1, 10)))
     except TerminationException:
         print("Shutting down producer...", flush=True)
         producer.close()
