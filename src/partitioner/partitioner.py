@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
                 for date in set(dates):
                     # Filter transactions based on date
-                    filtered_date = table.filter(pc.day(pc.field("timestamp")) == date.day)
+                    filtered_date = filtered_type.filter(pc.day(pc.field("timestamp")) == date.day)
 
                     year, month, day = date.year, date.month, date.day
                     output_key = generate_parquet_key()

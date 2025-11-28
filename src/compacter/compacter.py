@@ -36,6 +36,9 @@ if __name__ == '__main__':
         processed = []
         parquets = [obj for obj in objects if f"transaction_type={ttype}" in obj['Key']]
 
+        if not parquets:
+            continue
+
         total_size = sum(obj['Size'] for obj in parquets)
         num_files = math.ceil(total_size / target_size)
         

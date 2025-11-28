@@ -69,6 +69,10 @@ if __name__ == '__main__':
             processed += 1
 
             if processed >= limit_msg or time.time() - start >= limit_time:
+                if not processed:
+                    start = time.time()
+                    continue 
+
                 print(f"Uploading the batch no. {b} to S3...", flush=True)
 
                 table = pa.Table.from_pylist(records)
@@ -86,7 +90,7 @@ if __name__ == '__main__':
             table = pa.Table.from_pylist(records)
             buffer = io.BytesIO()
             pq.write_table(table, buffer)
-            s3.put_object(Bucket=bucket_name, Key=f"{file_key}_{b}.parquet", Body=buffer.read())
+            s3.put_object(Bucket=bucket_name, Key=f"{file_key}_{b}.parquet", Body=buffer.getvalue())
             consumer.commit()
             print("Uploaded the latest messages. Exiting container now...", flush=True)
         consumer.close()
