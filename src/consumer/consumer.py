@@ -4,11 +4,10 @@
 import io 
 import os
 import time
+import json
 import boto3
-import json 
 import signal
 import socket
-import logging
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -28,27 +27,54 @@ signal.signal(signal.SIGTERM, handle_termination)
 ####################################################################
 # Env variables
 ####################################################################
-topic = os.getenv('KAFKA_TOPIC')
-broker = os.getenv('KAFKA_BROKER')
+broker = os.getenv('KAFKA_BROKER', 'kafka:9092')
+topic = os.getenv('KAFKA_TOPIC', 'transactions-trial')
+bucket_name = os.getenv('BUCKET_NAME', 'raw-data')
 limit_msg = os.getenv('LIMIT_MSG', 100)
 limit_time = os.getenv('LIMIT_TIME', 120)
-container_id = socket.gethostname()
-bucket_name = 'raw-data'
-file_key = f'test-{container_id}'
+
+minio_endpoint = os.environ['MINIO_ENDPOINT']
+access_key = os.environ['MINIO_ACCESS_KEY']
+secret_key = os.environ['MINIO_SECRET_KEY']
+
+# CONSTANTS
+CONTAINER_ID = socket.gethostname()
+FILE_KEY = f'test-{CONTAINER_ID}'
+
+####################################################################
+# Helper function for uploading a transaction batch
+####################################################################
+def upload_batch(records, schema, b):
+    table = pa.Table.from_pylist(records, schema)
+    buffer = io.BytesIO()
+    pq.write_table(table, buffer)
+    s3.put_object(Bucket=bucket_name, Key=f"{FILE_KEY}_{b}.parquet", Body=buffer.getvalue())
+
 
 if __name__ == '__main__':
     ####################################################################
     # Consumer instantiation
     ####################################################################
-
     print("Consumer instantiation...", flush=True)
     consumer = KafkaConsumer(bootstrap_servers=broker, auto_offset_reset='latest', group_id=f'transaction-consumers')
     consumer.subscribe(topics=[topic])
+    print("Consumer ready, waiting for messages...", flush=True)
 
-    print("Consumer started, waiting for messages...", flush=True)
-    s3 = boto3.client('s3', endpoint_url=os.environ['MINIO_ENDPOINT'], aws_access_key_id=os.environ['MINIO_ACCESS_KEY'], aws_secret_access_key=os.environ['MINIO_SECRET_KEY'])
+    ####################################################################
+    # S3 client and schema to enforce for Parquet files
+    ####################################################################
+    s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     records = []
-    schema = []# pa.schema([(), ()...])
+    schema = pa.schema([
+        ('transaction_id', pa.string()),
+        ('user_id', pa.string()),
+        ('card_number', pa.string()),
+        ('amount', pa.float32()),
+        ('currency', pa.string()),
+        ('timestamp', pa.string()),
+        ('transaction_type', pa.string()),
+        ('status', pa.string())
+    ])
 
     try:
         s3.create_bucket(Bucket=bucket_name)
@@ -73,24 +99,17 @@ if __name__ == '__main__':
                     start = time.time()
                     continue 
 
-                print(f"Uploading the batch no. {b} to S3...", flush=True)
-
-                table = pa.Table.from_pylist(records)
-                buffer = io.BytesIO()
-                pq.write_table(table, buffer)
-
-                s3.put_object(Bucket=bucket_name, Key=f"{file_key}_{b}.parquet", Body=buffer.getvalue())
+                print(f"Uploading batch no. {b} to S3...", flush=True)
+                upload_batch(records=records, schema=schema, b=b)
                 records, start, processed, b = [], time.time(), 0, b+1
                 consumer.commit()
+                print(f"Batch no. {b} successfully uploaded to S3.")
 
     except TerminationException:
-        print("Shutting down consumer and writing data to S3...", flush=True)
+        print("Shutting down consumer and writing any left data to S3...", flush=True)
     finally:
         if records:
-            table = pa.Table.from_pylist(records)
-            buffer = io.BytesIO()
-            pq.write_table(table, buffer)
-            s3.put_object(Bucket=bucket_name, Key=f"{file_key}_{b}.parquet", Body=buffer.getvalue())
+            upload_batch(records=records, schema=schema, b=b)
             consumer.commit()
             print("Uploaded the latest messages. Exiting container now...", flush=True)
         consumer.close()

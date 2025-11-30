@@ -14,39 +14,51 @@ from datetime import datetime
 ####################################################################
 # Env variables
 ####################################################################
+bucket_src = os.getenv('BUCKET_SRC', 'raw-data')
+bucket_trg = os.getenv('BUCKET_TRG', 'tb-transactions')
+
 minio_endpoint = os.environ['MINIO_ENDPOINT']
 access_key = os.environ['MINIO_ACCESS_KEY']
 secret_key = os.environ['MINIO_SECRET_KEY']
-bucket_src = 'raw-data'
-bucket_trg = 'tb-transactions'
 
 # CONSTANT
 BATCH_SIZE = 10
 
-def generate_parquet_key():
+####################################################################
+# Helper function for generating a Parquet file key
+####################################################################
+def generate_parquet_key(year, month, day, ttype):
     commit_time = datetime.now().strftime("%Y%m%dT%H%M%SZ")
     file_uuid = uuid.uuid4().hex[:8]
     file_key = f"part-{commit_time}-{file_uuid}.parquet"
 
     return f"year={year}/month={month:02d}/day={day:02d}/transaction_type={ttype}/{file_key}"
 
+
 if __name__ == '__main__':
+    print(f"Partitioner job started at: {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}", flush=True)
+    ####################################################################
+    # S3 client and files retrieval from the ingestion bucket
+    ####################################################################
     s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     objects = s3.list_objects_v2(Bucket=bucket_src).get('Contents', [])
     parquets = [obj['Key'] for obj in objects if obj['Key'].endswith('.parquet')]
     tables, processed, i, n = [], [], 0, len(parquets)
 
+    ####################################################################
+    # Process the raw parquets and partition them into the tb bucket
+    ####################################################################   
     for key in parquets:
 
         response = s3.get_object(Bucket=bucket_src, Key=key)
         body = response["Body"].read()
-        if len(body) > 0:
+        if len(body) > 0:  # consider only non-empty files
             data = io.BytesIO(body)
             tables.append(pq.read_table(data))
         processed.append({'Key': key})
         i += 1
 
-        if not i % BATCH_SIZE or i == n:
+        if not i % BATCH_SIZE or i == n:  # accumulate 
             table = pa.concat_tables(tables)
 
             # Cast string to timestamp
@@ -57,7 +69,7 @@ if __name__ == '__main__':
                     pa.array([s.split('.')[0] for s in table["timestamp"].to_pylist()]), 
                     format="%Y-%m-%dT%H:%M:%S", 
                     unit="s"
-                    )
+                )
             )
 
             # Partition keys
@@ -74,7 +86,7 @@ if __name__ == '__main__':
                     filtered_date = filtered_type.filter(pc.day(pc.field("timestamp")) == date.day)
 
                     year, month, day = date.year, date.month, date.day
-                    output_key = generate_parquet_key()
+                    output_key = generate_parquet_key(year=year, month=month, day=day, ttype=ttype)
 
                     buffer = io.BytesIO()
                     pq.write_table(filtered_date, buffer)
@@ -84,3 +96,5 @@ if __name__ == '__main__':
 
             s3.delete_objects(Bucket=bucket_src, Delete={'Objects': processed})
             tables, processed = [], []
+
+    print("Partitioner job ended successfully. Exiting the container now...", flush=True)

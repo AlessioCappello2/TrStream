@@ -5,12 +5,9 @@ import os
 import json
 import time
 import signal
-import socket
 import random
-import logging
 
 from kafka import KafkaProducer
-
 from __generate import Generator
 
 ####################################################################
@@ -27,20 +24,17 @@ signal.signal(signal.SIGTERM, handle_termination)
 ####################################################################
 # Env variables
 ####################################################################
-topic = os.getenv('KAFKA_TOPIC')
-broker = os.getenv('KAFKA_BROKER')
-container_name = socket.gethostname()
-
+broker = os.getenv('KAFKA_BROKER', 'kafka:9092')
+topic = os.getenv('KAFKA_TOPIC', 'transactions-trial')
 
 if __name__ == '__main__':
     ####################################################################
     # Producer instantiation
     ####################################################################
-    print("Producer instantiation...")
+    print("Producer instantiation...", flush=True)
     producer = KafkaProducer(bootstrap_servers=broker, 
                                 linger_ms=1, 
                                 value_serializer=lambda v: json.dumps(v).encode("utf-8"))
-
     print("Producer ready to send messages...", flush=True)
 
     #####################################################################
@@ -49,10 +43,10 @@ if __name__ == '__main__':
     generator = Generator()
     try:
         while True:
-            print(f"Sending a new message!", flush=True)
+            print(f"New transaction received!", flush=True)
             transaction = generator.generate_transaction()
             producer.send(topic, key=f"{transaction['transaction_type']}_{transaction['user_id']}".encode(), value=transaction)
-            # time.sleep(int(random.uniform(1, 10)))
+            time.sleep(int(random.uniform(1, 10)))  # this line can be commented to produce high volumes of transactions
     except TerminationException:
         print("Shutting down producer...", flush=True)
         producer.close()
