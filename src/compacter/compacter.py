@@ -73,4 +73,4 @@ if __name__ == '__main__':
 
         s3.delete_objects(Bucket=bucket_name, Delete={'Objects': processed})
 
-    print("Compacter job ended successfully. Exiting the container now...", flush=True)
+    print(f"Compacter job ended successfully at {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}. Exiting the container now...", flush=True)
