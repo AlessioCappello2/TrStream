@@ -1,0 +1,33 @@
+[project]
+name = "trstream"
+version = "0.1.0"
+description = "Real-time transaction processing and storage with custom SQL editor"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "boto3==1.40.50",
+    "pyarrow==22.0.0"
+]
+
+[project.optional-dependencies]
+producer = [
+    "Faker==37.11.0",
+    "kafka-python==2.2.15"
+]
+
+consumer = [
+    "kafka-python==2.2.15"
+]
+
+querier = [
+    "duckdb==1.4.1",
+    "uvicorn==0.38.0",
+    "fastapi==0.120.4",
+    "pandas==2.3.3"
+]
+
+streamlit = [
+    "streamlit==1.52.0",
+    "pandas==2.3.3",
+    "requests==2.32.5"
+]

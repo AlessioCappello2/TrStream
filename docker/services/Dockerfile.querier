@@ -1,0 +1,14 @@
+FROM trstream-base
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked --no-dev --extra querier --active
+
+RUN mkdir -p src 
+COPY src/querier ./src/querier
+
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+CMD ["uvicorn", "src.querier.querier:app", "--host", "0.0.0.0", "--port", "8000"]

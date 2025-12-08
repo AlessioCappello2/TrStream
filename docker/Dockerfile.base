@@ -1,0 +1,24 @@
+# Dockerfile.base
+
+# Stage 1: The Base Builder (All Microservices will derive from this)
+FROM python:3.10-slim
+WORKDIR /app
+
+# 1. System Dependencies (Install common tools)
+# Aggiorna apt e installa curl e ca-certificates
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Install UV and Create Common Virtual Environment Structure
+# Pin the UV version for consistency
+RUN curl -fsSL https://astral.sh/uv/install.sh | sh \
+    && /root/.local/bin/uv venv /opt/venv
+
+# 3. Set the Environment Variables for the VENV
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:/root/.local/bin:$PATH"
+
+# Set a placeholder CMD/ENTRYPOINT for the base image
+CMD ["/bin/bash"]

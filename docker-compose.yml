@@ -75,7 +75,7 @@ services:
       - app-tier
 
   producer:
-    build: ./src/producer
+    image: trstream-producer:latest
     restart: unless-stopped
     depends_on:
       kafka:
@@ -86,15 +86,17 @@ services:
       - KAFKA_BROKER=kafka:9092
       - KAFKA_TOPIC=transactions-trial
     volumes: 
-      - ./producer:/app
+      - ./src/producer:/app/src/producer
     networks:
       - app-tier
 
   consumer:
-    build: ./src/consumer
+    image: trstream-consumer:latest
     restart: unless-stopped
     depends_on:
       kafka:
+        condition: service_healthy
+      minio:
         condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
@@ -106,12 +108,12 @@ services:
       - MINIO_SECRET_KEY=admin12345
       - BUCKET_NAME=raw-data
     volumes:
-      - ./consumer:/app
+      - ./src/consumer:/app/src/consumer
     networks:
       - app-tier
 
   partitioner:
-    build: ./src/partitioner
+    image: trstream-partitioner:latest
     depends_on:
       minio:
         condition: service_healthy
@@ -125,7 +127,7 @@ services:
       - app-tier
 
   compacter:
-    build: ./src/compacter
+    image: trstream-compacter:latest
     depends_on:
       minio:
         condition: service_healthy
@@ -138,7 +140,7 @@ services:
       - app-tier  
 
   querier:
-    build: ./src/querier
+    image: trstream-querier:latest
     depends_on:
       minio:
         condition: service_healthy
@@ -152,7 +154,7 @@ services:
       - app-tier  
 
   streamlit:
-    build: ./src/streamlit
+    image: trstream-streamlit:latest
     ports:
       - "8501:8501"
     depends_on:

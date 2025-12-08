@@ -6,7 +6,7 @@ import re
 import duckdb
 
 from fastapi import FastAPI, HTTPException
-from __utils import is_safe_query, clean_error_message, QueryRequest, AliasRequest
+from src.querier.__utils import is_safe_query, clean_error_message, QueryRequest, AliasRequest
 
 ####################################################################
 # Env variables

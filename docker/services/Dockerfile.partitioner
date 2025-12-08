@@ -1,0 +1,11 @@
+FROM trstream-base
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked --no-dev --active
+
+RUN mkdir -p src 
+COPY src/partitioner ./src/partitioner
+
+CMD ["python", "src/partitioner/partitioner.py"]

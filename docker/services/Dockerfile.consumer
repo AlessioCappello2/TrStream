@@ -1,0 +1,11 @@
+FROM trstream-base
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked --no-dev --extra consumer --active
+
+RUN mkdir -p src 
+COPY src/consumer ./src/consumer
+
+CMD ["python", "src/consumer/consumer.py"]
