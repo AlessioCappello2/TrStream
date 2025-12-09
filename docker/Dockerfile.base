@@ -21,4 +21,4 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:/root/.local/bin:$PATH"
 
 # Set a placeholder CMD/ENTRYPOINT for the base image
-CMD ["/bin/bash"]
+# CMD ["/bin/bash"]

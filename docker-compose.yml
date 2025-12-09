@@ -75,6 +75,9 @@ services:
       - app-tier
 
   producer:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.producer
     image: trstream-producer:latest
     restart: unless-stopped
     depends_on:
@@ -91,6 +94,9 @@ services:
       - app-tier
 
   consumer:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.consumer
     image: trstream-consumer:latest
     restart: unless-stopped
     depends_on:
@@ -113,6 +119,9 @@ services:
       - app-tier
 
   partitioner:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.partitioner
     image: trstream-partitioner:latest
     depends_on:
       minio:
@@ -127,6 +136,9 @@ services:
       - app-tier
 
   compacter:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.compacter
     image: trstream-compacter:latest
     depends_on:
       minio:
@@ -140,6 +152,9 @@ services:
       - app-tier  
 
   querier:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.querier
     image: trstream-querier:latest
     depends_on:
       minio:
@@ -154,6 +169,9 @@ services:
       - app-tier  
 
   streamlit:
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.streamlit
     image: trstream-streamlit:latest
     ports:
       - "8501:8501"
