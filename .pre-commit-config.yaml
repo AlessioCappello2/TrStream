@@ -1,0 +1,29 @@
+repos:
+  # ---------------------------
+  # Ruff + Lint
+  # ---------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+        args: ["--no-fix"]
+
+  # ---------------------------
+  # Black
+  # ---------------------------
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+        args: ["--check"]
+
+  # ---------------------------
+  # Basic checks
+  # ---------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-ast
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-added-large-files
