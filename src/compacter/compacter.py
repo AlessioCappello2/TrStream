@@ -10,10 +10,13 @@ import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
 ####################################################################
 # Env variables
 ####################################################################
+load_dotenv()
+
 bucket_name = os.getenv('BUCKET_NAME', 'tb-transactions')
 
 minio_endpoint = os.environ['MINIO_ENDPOINT']

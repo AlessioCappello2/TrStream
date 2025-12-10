@@ -5,12 +5,15 @@ import os
 import re
 import duckdb
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from src.querier.__utils import is_safe_query, clean_error_message, QueryRequest, AliasRequest
 
 ####################################################################
 # Env variables
 ####################################################################
+load_dotenv()
+
 minio_endpoint = os.environ['MINIO_ENDPOINT']
 access_key = os.environ['MINIO_ACCESS_KEY']
 secret_key = os.environ['MINIO_SECRET_KEY']

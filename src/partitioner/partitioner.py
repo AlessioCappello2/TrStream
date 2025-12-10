@@ -10,10 +10,13 @@ import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
 from datetime import datetime
+from dotenv import load_dotenv
 
 ####################################################################
 # Env variables
 ####################################################################
+load_dotenv()
+
 bucket_src = os.getenv('BUCKET_SRC', 'raw-data')
 bucket_trg = os.getenv('BUCKET_TRG', 'tb-transactions')
 

@@ -85,9 +85,8 @@ services:
         condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
-    environment:
-      - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=transactions-trial
+    env_file:
+      - .env
     volumes: 
       - ./src/producer:/app/src/producer
     networks:
@@ -106,12 +105,9 @@ services:
         condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
+    env_file:
+      - .env
     environment:
-      - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=transactions-trial
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_NAME=raw-data
     volumes:
       - ./src/consumer:/app/src/consumer
@@ -126,10 +122,9 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_SRC=raw-data
       - BUCKET_TRG=tb-transactions
     networks:
@@ -143,10 +138,9 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_NAME=tb-transactions
     networks:
       - app-tier  
@@ -159,10 +153,8 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-    environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     networks:
@@ -173,6 +165,8 @@ services:
       context: .
       dockerfile: ./docker/services/Dockerfile.streamlit
     image: trstream-streamlit:latest
+    env_file:
+      - .env
     ports:
       - "8501:8501"
     depends_on:

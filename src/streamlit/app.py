@@ -1,11 +1,22 @@
-import streamlit as st
-import requests
-import pandas as pd
-import threading
+import os
 import time
+import requests
+import threading
+import pandas as pd
+import streamlit as st
 
-API_BASE = "http://querier:8000"
+from dotenv import load_dotenv
 
+####################################################################
+# Env variables
+####################################################################
+load_dotenv()
+
+API_BASE = os.environ["QUERIER_API_BASE"]
+
+####################################################################
+# Frontend definition
+####################################################################
 st.set_page_config(page_title="DuckDB SQL Editor", layout="wide")
 st.title("DuckDB SQL Editor")
 
