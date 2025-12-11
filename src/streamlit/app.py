@@ -5,14 +5,12 @@ import threading
 import pandas as pd
 import streamlit as st
 
-from dotenv import load_dotenv
+from __config import settings
 
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
-
-API_BASE = os.environ["QUERIER_API_BASE"]
+API_BASE = settings.querier_api_base
 
 ####################################################################
 # Frontend definition

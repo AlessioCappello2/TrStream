@@ -9,22 +9,19 @@ import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
+from __config import settings
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
 
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
+bucket_name = settings.bucket_name 
 
-bucket_name = os.getenv('BUCKET_NAME', 'tb-transactions')
+minio_endpoint = settings.minio_endpoint
+access_key = settings.minio_access_key
+secret_key = settings.minio_secret_key
 
-minio_endpoint = os.environ['MINIO_ENDPOINT']
-access_key = os.environ['MINIO_ACCESS_KEY']
-secret_key = os.environ['MINIO_SECRET_KEY']
-
-# CONSTANT
-TARGET_SIZE = 256 * 1024 * 1024 # 256 MB expressed in Bytes
+target_size = settings.target_size
 
 
 if __name__ == '__main__':
@@ -48,7 +45,7 @@ if __name__ == '__main__':
             continue
 
         total_size = sum(obj['Size'] for obj in parquets)
-        num_files = math.ceil(total_size / TARGET_SIZE)
+        num_files = math.ceil(total_size / target_size)
         
         tables = []
         for p in parquets:

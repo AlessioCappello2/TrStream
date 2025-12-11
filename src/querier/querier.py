@@ -5,18 +5,17 @@ import os
 import re
 import duckdb
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from src.querier.__config import settings
 from src.querier.__utils import is_safe_query, clean_error_message, QueryRequest, AliasRequest
 
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
 
-minio_endpoint = os.environ['MINIO_ENDPOINT']
-access_key = os.environ['MINIO_ACCESS_KEY']
-secret_key = os.environ['MINIO_SECRET_KEY']
+minio_endpoint = settings.minio_endpoint
+access_key = settings.minio_access_key
+secret_key = settings.minio_secret_key
 
 # app
 app = FastAPI(title='DuckDB Querier Service')

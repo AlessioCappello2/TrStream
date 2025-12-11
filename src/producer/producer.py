@@ -7,8 +7,8 @@ import time
 import signal
 import random
 
-from dotenv import load_dotenv
 from kafka import KafkaProducer
+from __config import settings
 from __generate import Generator
 
 ####################################################################
@@ -25,10 +25,9 @@ signal.signal(signal.SIGTERM, handle_termination)
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
 
-broker = os.getenv('KAFKA_BROKER', 'kafka:9092')
-topic = os.getenv('KAFKA_TOPIC', 'transactions-trial')
+broker = settings.kafka_broker
+topic = settings.kafka_topic
 
 if __name__ == '__main__':
     ####################################################################

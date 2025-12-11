@@ -11,8 +11,8 @@ import socket
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from __config import settings
 from kafka import KafkaConsumer
-from dotenv import load_dotenv
 
 ####################################################################
 # Handle SIGTERM as an Exception
@@ -28,17 +28,15 @@ signal.signal(signal.SIGTERM, handle_termination)
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
+broker = settings.kafka_broker
+topic = settings.kafka_topic
+bucket_name = settings.bucket_name
+limit_msg = settings.limit_msg
+limit_time = settings.limit_time
 
-broker = os.getenv('KAFKA_BROKER', 'kafka:9092')
-topic = os.getenv('KAFKA_TOPIC', 'transactions-trial')
-bucket_name = os.getenv('BUCKET_NAME' , 'raw-data')
-limit_msg = os.getenv('LIMIT_MSG', 100)
-limit_time = os.getenv('LIMIT_TIME', 120)
-
-minio_endpoint = os.getenv('MINIO_ENDPOINT')
-access_key = os.getenv('MINIO_ACCESS_KEY')
-secret_key = os.getenv('MINIO_SECRET_KEY')
+minio_endpoint = settings.minio_endpoint
+access_key = settings.minio_access_key
+secret_key = settings.minio_secret_key
 
 # CONSTANTS
 CONTAINER_ID = socket.gethostname()

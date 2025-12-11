@@ -10,22 +10,20 @@ import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
 from datetime import datetime
-from dotenv import load_dotenv
+from __config import settings
 
 ####################################################################
 # Env variables
 ####################################################################
-load_dotenv()
+bucket_src = settings.bucket_src
+bucket_trg = settings.bucket_trg
 
-bucket_src = os.getenv('BUCKET_SRC', 'raw-data')
-bucket_trg = os.getenv('BUCKET_TRG', 'tb-transactions')
-
-minio_endpoint = os.environ['MINIO_ENDPOINT']
-access_key = os.environ['MINIO_ACCESS_KEY']
-secret_key = os.environ['MINIO_SECRET_KEY']
+minio_endpoint = settings.minio_endpoint
+access_key = settings.minio_access_key
+secret_key = settings.minio_secret_key
 
 # CONSTANT
-BATCH_SIZE = 10
+batch_size = settings.batch_size
 
 ####################################################################
 # Helper function for generating a Parquet file key
@@ -69,7 +67,7 @@ if __name__ == '__main__':
             processed.append({'Key': key})
             i += 1
 
-            if not i % BATCH_SIZE or i == n:  # accumulate 
+            if not i % batch_size or i == n:  # accumulate 
                 table = pa.concat_tables(tables)
 
                 # Cast string to timestamp
