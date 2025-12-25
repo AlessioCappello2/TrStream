@@ -8,4 +8,4 @@ RUN uv sync --locked --no-dev --extra producer --active
 RUN mkdir -p src 
 COPY src/producer ./src/producer
 
-CMD ["python", "src/producer/producer.py"]
+CMD ["python", "src/producer/main.py"]

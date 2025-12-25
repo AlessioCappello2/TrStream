@@ -1,55 +1,47 @@
-####################################################################
-# IMPORTS #
-####################################################################
-import os
-import json
-import time
-import signal
-import random
+import logging
 
 from kafka import KafkaProducer
-from __config import settings
-from __generate import Generator
+from kafka.errors import KafkaError, NoBrokersAvailable
 
-####################################################################
-# Handle SIGTERM as an Exception
-####################################################################
-class TerminationException(Exception):
+logger = logging.getLogger("trstream.kafka")
+
+class KafkaUnavailable(RuntimeError):
     pass
 
-def handle_termination(signum, frame):
-    raise TerminationException()
+class SafeKafkaProducer:
+    def __init__(self, **kwargs):
+        try:
+            self._producer = KafkaProducer(**kwargs)
+        except NoBrokersAvailable:
+            logger.critical("No Kafka brokers available at startup.")
+            raise KafkaUnavailable()
+        
+        self._shutdown = False
+        # prevent atexit cleanup from triggering close() again
+        self._producer._closed = False
 
-signal.signal(signal.SIGTERM, handle_termination)
+    def send(self, *args, **kwargs):
+        if self._shutdown:
+            raise RuntimeError("Send called after producer shutdown.")
+        return self._producer.send(*args, **kwargs)
 
-####################################################################
-# Env variables
-####################################################################
+    def flush(self, timeout=None):
+        if self._shutdown:
+            return
+        
+        try:
+            self._producer.flush(timeout=timeout)
+        except KafkaError:
+            logger.warning("Flush failed during shutdown.")
 
-broker = settings.kafka_broker
-topic = settings.kafka_topic
-
-if __name__ == '__main__':
-    ####################################################################
-    # Producer instantiation
-    ####################################################################
-    print("Producer instantiation...", flush=True)
-    producer = KafkaProducer(bootstrap_servers=broker, 
-                                linger_ms=1, 
-                                value_serializer=lambda v: json.dumps(v).encode("utf-8"))
-    print("Producer ready to send messages...", flush=True)
-
-    #####################################################################
-    # Transactions generation
-    #####################################################################
-    generator = Generator()
-    try:
-        while True:
-            print(f"New transaction received!", flush=True)
-            transaction = generator.generate_transaction()
-            producer.send(topic, key=f"{transaction['transaction_type']}_{transaction['user_id']}".encode(), value=transaction)
-            time.sleep(int(random.uniform(1, 10)))  # this line can be commented to produce high volumes of transactions
-    except TerminationException:
-        print("Shutting down producer...", flush=True)
-        producer.close()
-        print("Producer finished! Exiting the container now...", flush=True)
+    def close(self, timeout=None):
+        if self._shutdown:
+            return
+        
+        self._shutdown = True
+        try:
+            self._producer.close(timeout=timeout)
+        except KafkaError:
+            logger.warning("Close failed during shutdown.")
+        finally:
+            self._producer._closed = True

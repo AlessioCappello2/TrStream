@@ -1,116 +1,30 @@
-####################################################################
-# IMPORTS #
-####################################################################
-import io 
-import os
-import time
-import json
-import boto3
-import signal
-import socket
-import pyarrow as pa
-import pyarrow.parquet as pq
+import logging
 
-from __config import settings
 from kafka import KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 
-####################################################################
-# Handle SIGTERM as an Exception
-####################################################################
-class TerminationException(Exception):
+logger = logging.getLogger("trstream.consumer.kafka")
+
+class KafkaUnavailable(Exception):
     pass
 
-def handle_termination(signum, frame):
-    raise TerminationException()
+class SafeKafkaConsumer:
 
-signal.signal(signal.SIGTERM, handle_termination)
+    def __init__(self, **kwargs):
+        try:
+            self._consumer = KafkaConsumer(**kwargs)
+        except NoBrokersAvailable as e:
+            logger.error("Kafka unavailable during consumer startup")
+            raise KafkaUnavailable() from e
 
-####################################################################
-# Env variables
-####################################################################
-broker = settings.kafka_broker
-topic = settings.kafka_topic
-bucket_name = settings.bucket_name
-limit_msg = settings.limit_msg
-limit_time = settings.limit_time
+    def subscribe(self, topics):
+        self._consumer.subscribe(topics)
 
-minio_endpoint = settings.minio_endpoint
-access_key = settings.minio_access_key
-secret_key = settings.minio_secret_key
+    def poll(self, timeout_ms):
+        return self._consumer.poll(timeout_ms=timeout_ms)
 
-# CONSTANTS
-CONTAINER_ID = socket.gethostname()
-FILE_KEY = f'test-{CONTAINER_ID}'
+    def commit(self):
+        self._consumer.commit()
 
-####################################################################
-# Helper function for uploading a transaction batch
-####################################################################
-def upload_batch(records, schema, b):
-    table = pa.Table.from_pylist(records, schema)
-    buffer = io.BytesIO()
-    pq.write_table(table, buffer)
-    s3.put_object(Bucket=bucket_name, Key=f"{FILE_KEY}_{b}.parquet", Body=buffer.getvalue())
-
-
-if __name__ == '__main__':
-    ####################################################################
-    # Consumer instantiation
-    ####################################################################
-    print("Consumer instantiation...", flush=True)
-    consumer = KafkaConsumer(bootstrap_servers=broker, auto_offset_reset='latest', group_id=f'transaction-consumers')
-    consumer.subscribe(topics=[topic])
-    print("Consumer ready, waiting for messages...", flush=True)
-
-    ####################################################################
-    # S3 client and schema to enforce for Parquet files
-    ####################################################################
-    s3 = boto3.client('s3', endpoint_url=minio_endpoint, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    records = []
-    schema = pa.schema([
-        ('transaction_id', pa.string()),
-        ('user_id', pa.string()),
-        ('card_number', pa.string()),
-        ('amount', pa.float32()),
-        ('currency', pa.string()),
-        ('timestamp', pa.string()),
-        ('transaction_type', pa.string()),
-        ('status', pa.string())
-    ])
-
-    try:
-        s3.create_bucket(Bucket=bucket_name)
-    except Exception:
-        print("Bucket already exists. Skipping bucket creation...")
-
-    #####################################################################
-    # Transactions processing
-    #####################################################################
-    try:
-        start = time.time()
-        processed = b = 0
-        
-        for message in consumer:
-            m = json.loads(message.value.decode())
-            print(f"Received message: {m}", flush=True)
-            records.append(m)
-            processed += 1
-
-            if processed >= limit_msg or time.time() - start >= limit_time:
-                if not processed:
-                    start = time.time()
-                    continue 
-
-                print(f"Uploading batch no. {b} to S3...", flush=True)
-                upload_batch(records=records, schema=schema, b=b)
-                records, start, processed, b = [], time.time(), 0, b+1
-                consumer.commit()
-                print(f"Batch no. {b} successfully uploaded to S3.")
-
-    except TerminationException:
-        print("Shutting down consumer and writing any left data to S3...", flush=True)
-    finally:
-        if records:
-            upload_batch(records=records, schema=schema, b=b)
-            consumer.commit()
-            print("Uploaded the latest messages. Exiting container now...", flush=True)
-        consumer.close()
+    def close(self):
+        self._consumer.close()

@@ -1,0 +1,7 @@
+consumer:
+  poll_ms: 5000
+  group_id: transaction-consumers
+  auto_offset_reset: latest
+  limit_msg: 1000
+  limit_time: 180
+

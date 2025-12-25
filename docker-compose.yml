@@ -33,7 +33,7 @@ services:
     depends_on:
       - kafka
     volumes:
-      - ./kafka-config:/scripts
+      - ./init-scripts:/scripts
     entrypoint:
       ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
     networks:
@@ -74,6 +74,20 @@ services:
     networks:
       - app-tier
 
+  minio-config:
+    image: python:3.10-slim
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - app-tier
+    volumes:
+      - ./init-scripts:/scripts
+    command: >
+      sh -c "pip install --no-cache-dir boto3==1.40.50 && python /scripts/create_buckets.py"
+
   producer:
     build:
       context: .
@@ -85,6 +99,9 @@ services:
         condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
+    environment:
+      - BATCH_SIZE_LOG=100
+      - MAX_SEND_RETRIES=5
     env_file:
       - .env
     volumes: 
@@ -104,6 +121,8 @@ services:
       minio:
         condition: service_healthy
       kafka-config:
+        condition: service_completed_successfully
+      minio-config:
         condition: service_completed_successfully
     env_file:
       - .env

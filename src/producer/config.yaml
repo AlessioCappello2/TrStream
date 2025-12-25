@@ -1,0 +1,20 @@
+rate:
+  min_sleep_sec: 1
+  max_sleep_sec: 10
+
+users:
+  count: 10
+
+transactions:
+  currency: EUR
+  amount:
+    min: 5.0
+    max: 500.0
+  types:
+    - DEBIT
+    - CREDIT
+    - REFUND
+  statuses:
+    - PENDING
+    - COMPLETED
+    - FAILED
