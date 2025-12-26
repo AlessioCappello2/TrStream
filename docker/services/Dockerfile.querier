@@ -1,14 +1,20 @@
+# Dockerfile.querier
+
+# Querier backend service
 FROM trstream-base
 WORKDIR /app
 
+# Copy toml and lock and install dependencies
 COPY pyproject.toml uv.lock ./
-
 RUN uv sync --locked --no-dev --extra querier --active
 
+# Copy source code
 RUN mkdir -p src 
 COPY src/querier ./src/querier
 
+# ENV variable
 ENV PYTHONPATH=/app
 
+# entrypoint
 EXPOSE 8000
 CMD ["uvicorn", "src.querier.querier:app", "--host", "0.0.0.0", "--port", "8000"]

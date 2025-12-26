@@ -1,13 +1,19 @@
+# Dockerfile.streamlit
+
+# Streamlit SQL Query editor
 FROM trstream-base
 WORKDIR /app
 
+# Copy toml and lock and install dependencies
 COPY pyproject.toml uv.lock ./
-
 RUN uv sync --locked --no-dev --extra streamlit --active
 
+# Copy source code
 RUN mkdir -p src 
 COPY src/streamlit ./src/streamlit
 
+# ENV variable
 ENV PYTHONPATH=/app
 
+# entrypoint
 CMD ["streamlit", "run", "src/streamlit/app.py", "--server.port=8501", "--server.headless=true"]

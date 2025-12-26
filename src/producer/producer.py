@@ -17,8 +17,6 @@ class SafeKafkaProducer:
             raise KafkaUnavailable()
         
         self._shutdown = False
-        # prevent atexit cleanup from triggering close() again
-        self._producer._closed = False
 
     def send(self, *args, **kwargs):
         if self._shutdown:
@@ -43,5 +41,3 @@ class SafeKafkaProducer:
             self._producer.close(timeout=timeout)
         except KafkaError:
             logger.warning("Close failed during shutdown.")
-        finally:
-            self._producer._closed = True

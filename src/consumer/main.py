@@ -55,8 +55,8 @@ secret_key = settings.minio_secret_key
 
 # CONSTANTS
 CONTAINER_ID = socket.gethostname()
-RUN_ID = int(time.time())
-FILE_KEY = f'test-{CONTAINER_ID}-{RUN_ID}'
+RUN_ID = int(time.time_ns())
+FILE_KEY = f'part-{CONTAINER_ID}-{RUN_ID}'
 
 
 if __name__ == '__main__':

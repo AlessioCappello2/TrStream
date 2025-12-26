@@ -1,11 +1,16 @@
+# Dockerfile.partitioner
+
+# Raw data partitioner service 
 FROM trstream-base
 WORKDIR /app
 
+# Copy toml and lock and install dependencies
 COPY pyproject.toml uv.lock ./
-
 RUN uv sync --locked --no-dev --active
 
+# Copy source code
 RUN mkdir -p src 
 COPY src/partitioner ./src/partitioner
 
+# entrypoint
 CMD ["python", "src/partitioner/partitioner.py"]
