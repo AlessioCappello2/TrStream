@@ -13,4 +13,4 @@ RUN mkdir -p src
 COPY src/partitioner ./src/partitioner
 
 # entrypoint
-CMD ["python", "src/partitioner/partitioner.py"]
+CMD ["python", "src/partitioner/main.py"]
