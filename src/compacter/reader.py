@@ -8,8 +8,12 @@ class S3Reader:
         self.bucket = bucket
 
 
-    def list_objects_page(self, continuation_token=None):
+    def list_objects_page(self, prefix=None, continuation_token=None):
         kwargs = {"Bucket": self.bucket}
+
+        if prefix:
+            kwargs["Prefix"] = prefix
+
         if continuation_token:
             kwargs["ContinuationToken"] = continuation_token
 

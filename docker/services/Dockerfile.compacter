@@ -13,4 +13,4 @@ RUN mkdir -p src
 COPY src/compacter ./src/compacter
 
 # entrypoint
-CMD ["python", "src/compacter/compacter.py"]
+CMD ["python", "src/compacter/main.py"]
