@@ -20,6 +20,7 @@ def clean_error_message(e: Exception) -> str:
     msg = str(e)
     lines = [line.strip() for line in msg.split("\n") if line.strip()]
     return lines[0] if lines else msg
+    
     # prefixes = {
     #     r"^DuckDB Error:\s*",
     #     r"^HTTP Error:\s*",

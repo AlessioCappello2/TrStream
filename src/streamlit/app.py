@@ -1,11 +1,10 @@
-import os
 import time
 import requests
 import threading
 import pandas as pd
 import streamlit as st
 
-from __config import settings
+from settings import settings
 
 ####################################################################
 # Env variables
@@ -23,7 +22,11 @@ tab_query, tab_alias = st.tabs(["Run Query", "Manage Aliases"])
 # Tab query
 with tab_query:
     st.subheader("Run SQL query")
-    sql = st.text_area("Enter SQL query:", height=150)
+    sql = st.text_area(
+        "Enter SQL query:", 
+        height=150,
+        placeholder="SELECT * FROM read_parquet('s3://tb-transactions/**/*.parquet');"  
+    )
 
     if st.button("Run Query"):
         if not sql.strip():
@@ -73,8 +76,8 @@ with tab_query:
 with tab_alias:
     st.subheader("Create or Update Alias")
 
-    alias_name = st.text_input("Alias name (e.g. tx)", key="alias_name")
-    alias_path = st.text_input("Parquet path (e.g. s3://bucket/path/*.parquet)", key="alias_path")
+    alias_name = st.text_input("Alias name", key="alias_name", placeholder="transactions")
+    alias_path = st.text_input("Parquet path", key="alias_path", placeholder="s3://bucket/path/*.parquet")
 
     if st.button("Create Alias"):
         if not alias_name or not alias_path:

@@ -9,4 +9,4 @@ def setup_logging():
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    logging.getLogger("kafka").setLevel(logging.CRITICAL)
+    return logging.getLogger("trstream.compacter")

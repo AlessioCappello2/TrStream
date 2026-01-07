@@ -12,5 +12,8 @@ RUN uv sync --locked --no-dev --active
 RUN mkdir -p src 
 COPY src/compacter ./src/compacter
 
+# Python path
+ENV PYTHONPATH=/app/src
+
 # entrypoint
-CMD ["python", "src/compacter/main.py"]
+CMD ["python", "-m", "compacter.main"]

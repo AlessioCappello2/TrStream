@@ -6,4 +6,7 @@ class Settings(BaseSettings):
     batch_size_log: int = 100
     max_retries: int = 5
 
+    class Config:
+        env_file = ".env"
+
 settings = Settings()

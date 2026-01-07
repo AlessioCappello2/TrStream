@@ -8,3 +8,6 @@ def setup_logging():
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
+
+    logging.getLogger("kafka").setLevel(logging.CRITICAL)
+    return logging.getLogger("trstream.producer")

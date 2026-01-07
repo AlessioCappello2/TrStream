@@ -8,3 +8,5 @@ def setup_logging():
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
+
+    return logging.getLogger("trstream.partitioner")

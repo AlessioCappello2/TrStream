@@ -1,10 +1,10 @@
 import duckdb
-
-from .db import init_duckdb
-from .utils import clean_error_message
-from .query_manager import QueryManager
 from fastapi import FastAPI, HTTPException
-from .models import QueryRequest, QueryResponse, AliasRequest
+
+from .api.models import QueryRequest, QueryResponse, AliasRequest
+from .core.db import init_duckdb
+from .core.query_manager import QueryManager
+from .utils import clean_error_message
 
 ####################################################################
 # App, db connection and request manager

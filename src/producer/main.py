@@ -6,22 +6,20 @@ import json
 import time
 import signal
 import random
-import logging
 
-from settings import settings
-from config import load_config
-from kafka import KafkaProducer
 from kafka.errors import KafkaError
-from logging_config import setup_logging
-from generator import TransactionGenerator
-from producer import SafeKafkaProducer, KafkaUnavailable
+
+from producer.config.settings import settings
+from producer.config.load_config import load_config
+from producer.config.logging_config import setup_logging
+
+from producer.core.transaction_generator import TransactionGenerator
+from producer.core.producer import SafeKafkaProducer, KafkaUnavailable
 
 ####################################################################
 # Logging
 ####################################################################
-setup_logging()
-logger = logging.getLogger("trstream.producer")
-
+logger = setup_logging()
 logger.info("Producer service starting...")
 
 ####################################################################
@@ -45,8 +43,8 @@ topic = settings.kafka_topic
 batch_size_log = settings.batch_size_log
 max_retries = settings.max_retries
 
-
-if __name__ == '__main__':
+# Main function
+def main():
     ####################################################################
     # Config reading
     ####################################################################   
@@ -75,6 +73,7 @@ if __name__ == '__main__':
     generator = TransactionGenerator(cfg=cfg)
     counter = retry = 0
     transaction = None
+    global running
 
     while running:
         if retry == 0:
@@ -109,9 +108,14 @@ if __name__ == '__main__':
                 running = False 
                 break
             
-            logger.warning(f"Sending to Kafka failed. Retry no. {retry}")   # extra={"retry": retry})
+            logger.warning(f"Sending to Kafka failed. Retry no. {retry}")
             time.sleep(min(2**retry, 30))
 
     logger.info(f"Total transactions sent: {counter}. Shutting down producer...")
+    producer.flush()
     producer.close(timeout=5)
     logger.info("Producer finished! Exiting the container now...")
+
+
+if __name__ == '__main__':
+    main()

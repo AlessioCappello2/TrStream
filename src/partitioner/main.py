@@ -1,28 +1,23 @@
 ####################################################################
 # IMPORTS #
 ####################################################################
-import io
-import os
-import uuid
 import boto3
-import logging
 import pyarrow as pa
-
-from reader import S3Reader 
-from writer import S3Writer
-from deleter import S3Deleter
-from settings import settings
 from datetime import datetime
-from config import load_config
-from logging_config import setup_logging
-from partitioning import normalize_timestamp, split_partitions
 
+from partitioner.config.settings import settings
+from partitioner.config.load_config import load_config
+from partitioner.config.logging_config import setup_logging
+
+from partitioner.core.reader import S3Reader 
+from partitioner.core.writer import S3Writer
+from partitioner.core.deleter import S3Deleter
+from partitioner.core.partitioning import normalize_timestamp, split_partitions
 
 ####################################################################
 # Logging
 ####################################################################
-setup_logging()
-logger = logging.getLogger("trstream.partitioner")
+logger = setup_logging()
 
 ####################################################################
 # Env variables
@@ -34,9 +29,9 @@ minio_endpoint = settings.minio_endpoint
 access_key = settings.minio_access_key
 secret_key = settings.minio_secret_key
 
-
-if __name__ == '__main__':
-    
+# Main function
+def main():
+        
     logger.info(f"Partitioner job started at: {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}")
     
     ####################################################################
@@ -112,3 +107,7 @@ if __name__ == '__main__':
             break
 
     logger.info(f"Partitioner job ended successfully at {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}. Exiting the container now...")
+
+
+if __name__ == '__main__':
+    main()

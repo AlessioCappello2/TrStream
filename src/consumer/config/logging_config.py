@@ -1,5 +1,5 @@
-import logging
 import sys
+import logging
 
 def setup_logging():
     logging.basicConfig(
@@ -10,3 +10,4 @@ def setup_logging():
     )
 
     logging.getLogger("kafka").setLevel(logging.CRITICAL)
+    return logging.getLogger("trstream.consumer")

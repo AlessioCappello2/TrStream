@@ -6,7 +6,7 @@ from typing import Dict, Any
 from datetime import datetime
 
 class TransactionGenerator():
-    def __init__(self, cfg: Dict[str, Any]): #no_users: int = 10, transaction_types: list[str] = None, statuses: list[str] = None):
+    def __init__(self, cfg: Dict[str, Any]):
         self.fake = Faker()
         self.transaction_types = cfg['transactions']['types']
         self.statuses = cfg['transactions']['statuses']

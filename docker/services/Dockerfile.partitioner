@@ -12,5 +12,8 @@ RUN uv sync --locked --no-dev --active
 RUN mkdir -p src 
 COPY src/partitioner ./src/partitioner
 
+# Python path
+ENV PYTHONPATH=/app/src
+
 # entrypoint
-CMD ["python", "src/partitioner/main.py"]
+CMD ["python", "-m", "partitioner.main"]

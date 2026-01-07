@@ -1,5 +1,5 @@
 import duckdb
-from .utils import is_safe_query, validate_alias
+from ..utils import is_safe_query, validate_alias
 
 class QueryManager:
 

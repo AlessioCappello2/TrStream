@@ -1,32 +1,25 @@
 ####################################################################
 # IMPORTS #
 ####################################################################
-import io 
-import os
 import sys
 import time
 import json
 import boto3
 import signal
 import socket
-import logging
-import pyarrow as pa
-import pyarrow.parquet as pq
 
-from settings import settings
-from config import load_config
-from kafka import KafkaConsumer
-from writer import ParquetS3Writer
-from schema import TRANSACTION_SCHEMA
-from logging_config import setup_logging
-from consumer import SafeKafkaConsumer, KafkaUnavailable
+from consumer.config.settings import settings
+from consumer.config.load_config import load_config
+from consumer.config.logging_config import setup_logging
+
+from consumer.core.writer import ParquetS3Writer
+from consumer.core.schema import TRANSACTION_SCHEMA
+from consumer.core.consumer import SafeKafkaConsumer, KafkaUnavailable
 
 ####################################################################
 # Logging
 ####################################################################
-setup_logging()
-logger = logging.getLogger("trstream.consumer")
-
+logger = setup_logging()
 logger.info("Consumer service starting...")
 
 ####################################################################
@@ -58,8 +51,8 @@ CONTAINER_ID = socket.gethostname()
 RUN_ID = int(time.time_ns())
 FILE_KEY = f'part-{CONTAINER_ID}-{RUN_ID}'
 
-
-if __name__ == '__main__':
+# Main function
+def main():
     ####################################################################
     # Config reading
     ####################################################################   
@@ -107,6 +100,7 @@ if __name__ == '__main__':
     records = []
     batch_id = 0
     start_time = time.time()
+    global running
 
     while running:
         msg_pack = consumer.poll(timeout_ms=poll_ms)
@@ -131,3 +125,7 @@ if __name__ == '__main__':
 
     consumer.close()
     logger.info("Consumer finished! Exiting the container now...")
+
+
+if __name__ == '__main__':
+    main()

@@ -1,29 +1,22 @@
 ####################################################################
 # IMPORTS #
 ####################################################################
-import io
-import os
-import math
 import boto3
-import logging
-import pyarrow as pa
-import pyarrow.compute as pc
-import pyarrow.parquet as pq
+from datetime import datetime
 
-from reader import S3Reader
-from writer import S3Writer
-from deleter import S3Deleter
-from settings import settings
-from datetime import datetime, timedelta
-from logging_config import setup_logging
-from config import load_config, resolve_dates
-from compaction import group_by_transaction_type, compact_tables
+from compacter.config.settings import settings
+from compacter.config.logging_config import setup_logging
+from compacter.config.load_config import load_config, resolve_dates
+
+from compacter.core.reader import S3Reader
+from compacter.core.writer import S3Writer
+from compacter.core.deleter import S3Deleter
+from compacter.core.compacting import group_by_transaction_type, compact_tables
 
 ####################################################################
 # Logging
 ####################################################################
-setup_logging()
-logger = logging.getLogger("trstream.compacter")
+logger = setup_logging()
 
 ####################################################################
 # Env variables
@@ -34,10 +27,8 @@ minio_endpoint = settings.minio_endpoint
 access_key = settings.minio_access_key
 secret_key = settings.minio_secret_key
 
-target_size = settings.target_size
-
-
-if __name__ == '__main__':
+# Main function
+def main():
 
     logger.info(f"Compacter job started at: {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}")
     
@@ -112,3 +103,7 @@ if __name__ == '__main__':
             deleter.delete_objects(keys)
 
     logger.info(f"Compacter job ended successfully at {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}. Exiting the container now...")
+
+
+if __name__ == '__main__':
+    main()

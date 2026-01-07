@@ -1,8 +1,8 @@
 import time
 import duckdb 
 
-from .settings import settings
-from .logging_config import setup_logging
+from ..config.settings import settings
+from ..config.logging_config import setup_logging
 
 logger = setup_logging()
 
