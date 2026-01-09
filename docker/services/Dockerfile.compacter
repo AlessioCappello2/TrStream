@@ -1,0 +1,19 @@
+# Dockerfile.compacter
+
+# File optimization/compaction service
+FROM trstream-base
+WORKDIR /app
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/compacter ./src/compacter
+
+# Python path
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+CMD ["python", "-m", "compacter.main"]

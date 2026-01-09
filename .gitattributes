@@ -1,0 +1,4 @@
+# Force LF for scripts and Python files
+*.sh text eol=lf
+*.py text eol=lf
+Dockerfile text eol=lf

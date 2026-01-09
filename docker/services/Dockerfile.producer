@@ -1,0 +1,19 @@
+# Dockerfile.producer
+
+# Kafka Producer service
+FROM trstream-base
+WORKDIR /app
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra producer --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/producer ./src/producer
+
+# Python path
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+CMD ["python", "-m", "producer.main"]

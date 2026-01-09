@@ -33,7 +33,7 @@ services:
     depends_on:
       - kafka
     volumes:
-      - ./kafka-config:/scripts
+      - ./scripts-config:/scripts
     entrypoint:
       ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
     networks:
@@ -42,7 +42,7 @@ services:
       no
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.7.2
     depends_on:
       kafka:
         condition: service_healthy
@@ -58,8 +58,8 @@ services:
     container_name: minio
     command: server /data --console-address ":9001"
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=admin12345
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -74,8 +74,25 @@ services:
     networks:
       - app-tier
 
+  minio-config:
+    image: python:3.10-slim
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - app-tier
+    volumes:
+      - ./scripts-config:/scripts
+    command: >
+      sh -c "pip install --no-cache-dir boto3==1.40.50 && python /scripts/create_buckets.py"
+
   producer:
-    build: ./src/producer
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.producer
+    image: trstream-producer:latest
     restart: unless-stopped
     depends_on:
       kafka:
@@ -83,76 +100,92 @@ services:
       kafka-config:
         condition: service_completed_successfully
     environment:
-      - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=transactions-trial
+      - BATCH_SIZE_LOG=100
+      - MAX_SEND_RETRIES=5
+    env_file:
+      - .env
     volumes: 
-      - ./producer:/app
+      - ./src/producer:/app/src/producer
     networks:
       - app-tier
 
   consumer:
-    build: ./src/consumer
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.consumer
+    image: trstream-consumer:latest
     restart: unless-stopped
     depends_on:
       kafka:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
+      minio-config:
+        condition: service_completed_successfully
     environment:
-      - KAFKA_BROKER=kafka:9092
-      - KAFKA_TOPIC=transactions-trial
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_NAME=raw-data
+    env_file:
+      - .env
     volumes:
-      - ./consumer:/app
+      - ./src/consumer:/app/src/consumer
     networks:
       - app-tier
 
   partitioner:
-    build: ./src/partitioner
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.partitioner
+    image: trstream-partitioner:latest
     depends_on:
       minio:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_SRC=raw-data
       - BUCKET_TRG=tb-transactions
     networks:
       - app-tier
 
   compacter:
-    build: ./src/compacter
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.compacter
+    image: trstream-compacter:latest
     depends_on:
       minio:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
       - BUCKET_NAME=tb-transactions
     networks:
       - app-tier  
 
   querier:
-    build: ./src/querier
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.querier
+    image: trstream-querier:latest
     depends_on:
       minio:
         condition: service_healthy
-    environment:
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_ACCESS_KEY=admin
-      - MINIO_SECRET_KEY=admin12345
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     networks:
       - app-tier  
 
   streamlit:
-    build: ./src/streamlit
+    build:
+      context: .
+      dockerfile: ./docker/services/Dockerfile.streamlit
+    image: trstream-streamlit:latest
+    env_file:
+      - .env
     ports:
       - "8501:8501"
     depends_on:

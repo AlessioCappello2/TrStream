@@ -2,108 +2,102 @@
 *A distributed real-time transaction processing pipeline*
 
 ## About
-TrStream is a real-time data pipeline for ingesting, processing and organizing financial transactions at scale. <br>
-This project was developed as a personal initiative in my spare time to explore the design principles of modern data engineering pipelines in a financial context. <br>
-I have been inspired by reading [Designing Data-Intensive Applications](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/) by Martin Kleppmann.
+TrStream is a distributed data pipeline designed to simulate and process high-throughput financial transaction streams in real time.
+
+The project explores the architectural patterns behind modern fintech and data engineering systems, including:
+- event-driven ingestion
+- scalable stream processing
+- lakehouse-style storage
+- analytical querying
+
+It was developed as a personal project to apply concepts from [Designing Data-Intensive Applications](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/) (Martin Kleppmann) in a realistic and reproducible environment.
+
+## Motivation
+
+Modern financial platforms ingest millions of events per day and must:
+- process data reliably
+- retain raw events for auditing
+- optimize data layout for analytics
+- remain horizontally scalable
+
+TrStream models this workflow locally using open-source technologies, focusing on **system design** and data flow.
 
 ## Overview
-The pipeline ingests synthetic transactions from multiple Kafka producers and processes them via parallel consumers. Each transaction is sent through the broker and stored in Parquet format within a [MinIO](https://www.min.io/)-based data lake, enabling efficient querying and downstream analytics. The goal is to reproduce the architecture of a modern streaming pipeline in a local and reproducible setup.
+At a high level, the pipeline:
+1. Generates transaction events from multiple producers
+2. Streams the events through Kafka
+3. Stores raw data in a data lake (Parquet on S3-compatible storage)
+4. Reorganizes and compacts data for analytical workloads
+5. Exposes a SQL query layer on optimized data
+
+The system is fully containerized and can be scaled horizontally via Docker Compose.
 
 ## Architecture
-              ┌────────────────────────────────────────┐
-              │               Producers                │
-              │  Simulate live financial transactions  │
-              └────────────────────────────────────────┘
-                                   │
-                                   ▼
-                      ┌────────────────────────┐
-                      │         Kafka          │
-                      │  Message broker layer  │
-                      │  (Topic: transactions) │
-                      └────────────────────────┘
-                                   │
-                                   ▼
-          ┌───────────────────────────────────────────────┐
-          │                   Consumers                   │
-          │     Read, validate, and buffer transactions   │
-          │       Write raw data to MinIO as Parquet      │
-          └───────────────────────────────────────────────┘
-                                   │
-                                   ▼
-            ┌────────────────────────────────────────────┐
-            |              MinIO (Data Lake)             │
-            |    S3-compatible object storage for:       │
-            │    • Raw data (raw-data/)                  │
-            |    • Partitioned data (tb-transactions/)   │
-            └────────────────────────────────────────────┘
-                                   │
-               ┌───────────────────┴─────────────────────┐
-               ▼                                         ▼
-    ┌───────────────────────────┐          ┌────────────────────────────┐
-    |        Partitioner        |          |          Compacter         |
-    | Reorganizes raw data into |          | Merges small Parquet files |
-    | partitioned folders by    |          | and optimizes layout for   |
-    | date + transaction type.  |          | analytical performance.    |
-    └───────────────────────────┘          └────────────────────────────┘              
-                │                                        │
-                └────────────────────────────────────────┘             
-                                   │
-                                   ▼
-                    ┌────────────────────────────┐
-                    │        Query Layer         │
-                    │  DuckDB / Athena-like SQL  │
-                    │ queries on optimized data. │
-                    └────────────────────────────┘
+![Architecture](images/Architecture.svg)
 
-Data flow:
-- Kafka Producers simulate continuous transaction streams, generating fake transactions using [Faker](https://pypi.org/project/Faker/), where it is possible to force values and ranges.
-- Kafka Consumers process and persist them as raw Parquet files in MinIO, under the ```raw-data``` bucket.
-- Partitioner organizes data into logical folders, partitioning by date and transaction type (e.g. ```year=2025/month=10/day=27/transaction_type=CREDIT```).
-- Compacter merges fragmented Parquet files to improve query efficiency and storage layout.
-- Query Layer allows for SQL-based queries directly on partitioned and optimized Parquet data (in progress).
+## Data flow:
+- Producers simulate transaction events with configurable values, distribution and event rates
+- Kafka ensures decoupling, buffering and fault tolerance
+- Consumers persist immutable raw data in Parquet format
+- The partitioner organizes data by date and transaction type
+- The compacter merges small files to improve query performance
+- The query layer enables SQL queries directly on optimized Parquet data
+- A Streamlit SQL editor is provided to conveniently query data
 
-## Features
-- Real-time ingestion and storage of thousands of transactions per minute
-- Balanced workloads through Kafka topic partitioning by user and transaction type
-- Reliable event delivery with manual offset commits and crash recovery
-- Durable and query-ready Parquet storage for downstream analytics
-- Orchestration and health checks implemented through Docker
-- Full observability of Kafka topics through Kafka UI
+## Key features
+- Real-time ingestion with Kafka-based buffering and backpressure
+- Horizontal scalability for producers and consumers via Kafka partitioning
+- End-to-end observability of message flow via Kafka UI
+- Immutable Parquet storage suitable for downstream analytics and auditing
+- Explicit data lifecycle stages: ingestion, partitioning and compaction
+- SQL querying via DuckDB on lake data (Athena-like experience)
+- Lightweight SQL editor implemented with Streamlit
+- Fully containerized local environment with Docker Compose orchestration and explicit health checks
 
 ## Tech stack
 | Component     | Technology                   |
 |---------------|------------------------------|
 | Messaging     | Kafka (Bitnami legacy image) |
-| Data Lake     | MinIO (S3-compatible)        |
+| Storage       | MinIO (S3-compatible)        |
 | Processing    | Python, PyArrow, Boto3       |
 | Orchestration | Docker Compose               |
 | Monitoring    | Kafka UI (Provectus Labs)    |
 | Querying      | DuckDB, FastAPI              |
+| Visualization | Streamlit                    |
 
-Access:
+## Running locally
+Helper scripts are provided to simplify common workflows.
+
+- Build all images:
+```bash 
+bash scripts-cli/build.sh 
+```
+
+- Start the core pipeline:
+```bash 
+bash scripts-cli/run.sh 
+```
+
+- Start all services (including query layer and dashboards):
+```bash 
+bash scripts-cli/run_all.sh 
+```
+
+- Optional scaling
+```bash 
+bash scripts-cli/run.sh producer=3 consumer=4 
+```
+
+See **scripts-cli/README.md** for more details.
+
+## Access Points:
 - Kafka UI: http://localhost:8080
-- MinIO UI: http://localhost:9001 (user: admin, password: admin12345)
+- MinIO Console: http://localhost:9001
+- SQL Querier API: http://localhost:8000
+- Streamlit Editor: http://localhost:8501
 
-## How to run locally
-Open a new terminal within the root folder and launch the following commands:
-- Build all services:
-```
-docker-compose build 
-```
-- Start Kafka, MinIO and the entire pipeline:
-```
-docker-compose up -d 
-```
-- Scale producers and consumers (optional):
-```
-docker-compose up -d --scale producer=3 --scale consumer=4
-```
-
-## Work in progress
-- Implementation of a DuckDB-based or similar querying layer
-- Jobs scheduling for partitioning and compaction
-
-## Additional planned features
-Once the infrastructure is ready, I want to focus on some real use cases:
-- ML Fraud Detection
-- Metrics collection and reporting
+## Roadmap
+Planned extensions focus on real-world relevance rather than feature completeness:
+- Integration with real transaction APIs (e.g. Stripe, Revolut)
+- Metrics and observability improvements
+- Fraud detection and analytics use cases
