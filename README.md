@@ -35,7 +35,7 @@ The system is fully containerized and can be scaled horizontally via Docker Comp
 ## Architecture
 ![Architecture](images/Architecture.svg)
 
-## Data flow:
+## Data flow
 - Producers simulate transaction events with configurable values, distribution and event rates
 - Kafka ensures decoupling, buffering and fault tolerance
 - Consumers persist immutable raw data in Parquet format
@@ -46,11 +46,11 @@ The system is fully containerized and can be scaled horizontally via Docker Comp
 
 ## Key features
 - Real-time ingestion with Kafka-based buffering and backpressure
-- Horizontal scalability for producers and consumers via Kafka partitioning
-- End-to-end observability of message flow via Kafka UI
-- Immutable Parquet storage suitable for downstream analytics and auditing
+- Horizontal scalable producers and consumers via Kafka partitioning
+- End-to-end observability of message flow through Kafka UI
+- Immutable Parquet storage designed for downstream analytics and auditing
 - Explicit data lifecycle stages: ingestion, partitioning and compaction
-- SQL querying via DuckDB on lake data (Athena-like experience)
+- SQL querying on lake data via DuckDB (Athena-like experience)
 - Lightweight SQL editor implemented with Streamlit
 - Fully containerized local environment with Docker Compose orchestration and explicit health checks
 
@@ -88,9 +88,9 @@ bash scripts-cli/run_all.sh
 bash scripts-cli/run.sh producer=3 consumer=4 
 ```
 
-See **scripts-cli/README.md** for more details.
+See [scripts-cli/README.md](https://github.com/AlessioCappello2/TrStream/tree/main/scripts-cli) for more details.
 
-## Access Points:
+## Access Points
 - Kafka UI: http://localhost:8080
 - MinIO Console: http://localhost:9001
 - SQL Querier API: http://localhost:8000
