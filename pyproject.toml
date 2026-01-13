@@ -33,3 +33,10 @@ streamlit = [
     "pandas==2.3.3",
     "requests==2.32.5"
 ]
+
+stripe-webhook = [
+    "kafka-python==2.2.15",
+    "uvicorn==0.38.0",
+    "fastapi==0.120.4",
+    "stripe==14.1.0"
+]
