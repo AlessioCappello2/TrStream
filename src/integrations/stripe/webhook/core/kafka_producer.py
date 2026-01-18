@@ -28,16 +28,17 @@ class StripeKafkaProducer:
 
 
     def send_event(self, event: dict):
-        logger.info(event)
+        logger.debug(event)
 
-        obj = event['data']['object']
+        obj = event['payload']['data']['object']
         retry = 0
+        key = f"stripe_payment_intent_{obj['payment_intent']}" if obj['object'] == "charge" else f"stripe_payment_intent_{obj['id']}" 
 
         while retry < self.max_retries:
             try:
                 future = self.producer.send(
                     topic=self.topic,
-                    key=f"stripe_{obj['object']}_{obj['id']}".encode(),
+                    key=key.encode(),
                     value=event
                 )
 
@@ -48,10 +49,9 @@ class StripeKafkaProducer:
                     self.producer.flush()
                     logger.info(f"No. of events sent: {self.counter}")
 
-                logger.info("Event sent to Kafka.")
                 break
             except KafkaError as e:
-                # handle retry/backoff if desired
+                # exponential backoff with upper bound
                 retry += 1
 
                 if retry > self.max_retries:

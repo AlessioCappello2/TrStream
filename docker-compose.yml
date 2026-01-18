@@ -209,5 +209,22 @@ services:
       - MAX_SEND_RETRIES=5
     ports:
       - "8100:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-tier
+
+  stripe-generator:
+    build:
+      context: .
+      dockerfile: ./docker/services/integrations/stripe/Dockerfile.generator
+    image: trstream-stripe-generator:latest
+    depends_on:
+      stripe-webhook:
+        condition: service_healthy
     networks:
       - app-tier

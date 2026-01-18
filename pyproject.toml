@@ -40,3 +40,7 @@ stripe-webhook = [
     "fastapi==0.120.4",
     "stripe==14.1.0"
 ]
+
+stripe-generator = [
+    "stripe==14.1.0"
+]

@@ -33,7 +33,7 @@ At a high level, the pipeline:
 The system is fully containerized and can be scaled horizontally via Docker Compose.
 
 ## Architecture
-![Architecture](images/Architecture.svg)
+![Architecture](images/Architecture_v1.1.svg)
 
 ## Data flow
 - Producers simulate transaction events with configurable values, distribution and event rates

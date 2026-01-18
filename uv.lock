@@ -1443,6 +1443,9 @@ streamlit = [
     { name = "requests" },
     { name = "streamlit" },
 ]
+stripe-generator = [
+    { name = "stripe" },
+]
 stripe-webhook = [
     { name = "fastapi" },
     { name = "kafka-python" },
@@ -1467,11 +1470,12 @@ requires-dist = [
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "requests", marker = "extra == 'streamlit'", specifier = "==2.32.5" },
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = "==1.52.0" },
+    { name = "stripe", marker = "extra == 'stripe-generator'", specifier = "==14.1.0" },
     { name = "stripe", marker = "extra == 'stripe-webhook'", specifier = "==14.1.0" },
     { name = "uvicorn", marker = "extra == 'querier'", specifier = "==0.38.0" },
     { name = "uvicorn", marker = "extra == 'stripe-webhook'", specifier = "==0.38.0" },
 ]
-provides-extras = ["producer", "consumer", "querier", "streamlit", "stripe-webhook"]
+provides-extras = ["producer", "consumer", "querier", "streamlit", "stripe-webhook", "stripe-generator"]
 
 [[package]]
 name = "typing-extensions"
