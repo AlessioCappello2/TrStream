@@ -33,10 +33,10 @@ class SafeKafkaConsumer:
             logger.warning(f"Poll failed: {str(e)}")
             return {}
 
-    def commit(self):
+    def commit(self, **kwargs):
         if self._closed:
             return
-        self._consumer.commit()
+        self._consumer.commit(**kwargs)
 
     def close(self):
         if self._closed:

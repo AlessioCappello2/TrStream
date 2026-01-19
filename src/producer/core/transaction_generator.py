@@ -16,12 +16,16 @@ class TransactionGenerator():
 
     def generate_transaction(self):
         return {
-            "transaction_id": str(uuid.uuid4()),
-            "user_id": random.choice(self.user_ids),
-            "card_number": self.fake.credit_card_number(),
-            "amount": round(random.uniform(self.min_amount, self.max_amount), 2),
-            "currency": self.currency,
-            "timestamp": datetime.now().isoformat(timespec='milliseconds'),
-            "transaction_type": random.choice(self.transaction_types),
-            "status": random.choice(self.statuses)
+            "source": "faker", 
+            "received_at": datetime.now().isoformat(timespec='milliseconds'),
+            "payload": {
+                "transaction_id": str(uuid.uuid4()),
+                "user_id": random.choice(self.user_ids),
+                "card_number": self.fake.credit_card_number(),
+                "amount": round(random.uniform(self.min_amount, self.max_amount), 2),
+                "currency": self.currency,
+                "timestamp": datetime.now().isoformat(timespec='milliseconds'),
+                "transaction_type": random.choice(self.transaction_types),
+                "status": random.choice(self.statuses)
+            }
         }
