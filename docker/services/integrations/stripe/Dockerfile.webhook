@@ -1,0 +1,21 @@
+# Dockerfile.webhook 
+
+# Stripe webhook service
+FROM trstream-base
+WORKDIR /app
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra stripe-webhook --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/integrations/stripe/webhook ./src/webhook
+COPY src/integrations/stripe/stripe.env ./src/stripe.env
+
+# ENV variable
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+EXPOSE 8100
+CMD ["uvicorn", "webhook.main:app", "--host", "0.0.0.0", "--port", "8100"]

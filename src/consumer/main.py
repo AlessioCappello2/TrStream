@@ -8,12 +8,16 @@ import boto3
 import signal
 import socket
 
+from kafka import OffsetAndMetadata
+from collections import defaultdict
+
 from consumer.config.settings import settings
 from consumer.config.load_config import load_config
 from consumer.config.logging_config import setup_logging
 
 from consumer.core.writer import ParquetS3Writer
-from consumer.core.schema import TRANSACTION_SCHEMA
+from consumer.core.schema import MESSAGES_SCHEMA
+from consumer.core.validate import validate_and_normalize_event
 from consumer.core.consumer import SafeKafkaConsumer, KafkaUnavailable
 
 ####################################################################
@@ -40,7 +44,8 @@ signal.signal(signal.SIGINT, handle_termination)
 ####################################################################
 broker = settings.kafka_broker
 topic = settings.kafka_topic
-bucket_name = settings.bucket_name
+stripe_topic = settings.stripe_topic
+bucket_name = settings.minio_ingestion_bucket
 
 minio_endpoint = settings.minio_endpoint
 access_key = settings.minio_access_key
@@ -69,12 +74,13 @@ def main():
         consumer = SafeKafkaConsumer(
             bootstrap_servers=broker,
             auto_offset_reset=cfg['auto_offset_reset'],
-            group_id=cfg['group_id']
+            group_id=cfg['group_id'],
+            enable_auto_commit=False
         )
     except KafkaUnavailable:
         logger.error("Kafka unavailable at startup. Exiting...")
         sys.exit(1)
-    consumer.subscribe(topics=[topic])
+    consumer.subscribe(topics=[topic, stripe_topic])
     logger.info("Consumer ready, waiting for messages...")
 
     ####################################################################
@@ -91,37 +97,67 @@ def main():
         s3_client=s3,
         bucket=bucket_name,
         file_key=FILE_KEY,
-        schema=TRANSACTION_SCHEMA
+        schema=MESSAGES_SCHEMA
     )
 
     #####################################################################
     # Transactions processing
     #####################################################################
-    records = []
-    batch_id = 0
+    records = defaultdict(list)
+    count = 0
+    batch_ids = defaultdict(int)
     start_time = time.time()
+    partition_offsets = {}
     global running
 
     while running:
         msg_pack = consumer.poll(timeout_ms=poll_ms)
 
         # Collect messages
-        for _, messages in msg_pack.items():
+        for tp, messages in msg_pack.items():
             for msg in messages:
-                records.append(json.loads(msg.value.decode()))
+                decoded = json.loads(msg.value.decode())
+                try:
+                    record, iso_dt, hr = validate_and_normalize_event(decoded)
+                except ValueError:
+                    continue
+
+                count += 1
+                records[(record['source'], iso_dt, hr)].append(record)
+                partition_offsets[tp] = msg.offset + 1
 
         # Single flush condition
-        if records and (len(records) >= limit_msg or time.time() - start_time >= limit_time):
-            writer.write(records=records, batch_id=batch_id)
-            consumer.commit()
+        if records and (count >= limit_msg or time.time() - start_time >= limit_time):
+            logger.debug(f"Flushing {count} messages across {len(records)} partitions...")
+            for (source, dt, hr), messages in records.items():
+                bid = batch_ids[(source, dt, hr)] 
+                writer.write(records=messages, source=source, dt=dt, hr=hr, batch_id=bid)
+                batch_ids[(source, dt, hr)] += 1
+            
+            offsets = {
+               tp: OffsetAndMetadata(offset=offset, metadata=None, leader_epoch=-1)
+               for tp, offset in partition_offsets.items()
+            }
+
+            consumer.commit(offsets=offsets)
+            partition_offsets.clear()
             records.clear()
-            batch_id += 1
+            count = 0
             start_time = time.time()
+            
 
     if records:
         logger.info("Flushing remaining records...")
-        writer.write(records=records, batch_id=batch_id)
-        consumer.commit()
+        for (source, dt, hr), messages in records.items():
+            bid = batch_ids[(source, dt, hr)] 
+            writer.write(records=messages, source=source, dt=dt, hr=hr, batch_id=bid)
+
+        offsets = {
+            tp: OffsetAndMetadata(offset=offset, metadata=None, leader_epoch=-1)
+            for tp, offset in partition_offsets.items()
+        }
+
+        consumer.commit(offsets=offsets)
 
     consumer.close()
     logger.info("Consumer finished! Exiting the container now...")

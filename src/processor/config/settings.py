@@ -1,8 +1,8 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    bucket_src: str = "raw-data"
-    bucket_trg: str = "tb-transactions"
+    minio_ingestion_bucket: str
+    minio_processed_bucket: str
     batch_size: int = 100
 
     minio_endpoint: str = "http://minio:9000"

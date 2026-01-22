@@ -82,7 +82,7 @@ def main():
         try: 
             future = producer.send(
                 topic, 
-                key=f"{transaction['transaction_type']}_{transaction['user_id']}".encode(), 
+                key=f"{transaction['payload']['user_id']}".encode(), 
                 value=transaction
             )
             

@@ -1,9 +1,18 @@
 import math
 import pyarrow as pa
 
-from collections import defaultdict
+from typing import List
 
-def compact_tables(tables, target_size_bytes):
+def compact_tables(tables, target_size_bytes) -> List[pa.Table]:
+    """
+    Return a list of tables according to compaction criteria
+    
+    :param tables: tables to compact
+    :param target_size_bytes: target size in bytes for each file
+    :return: list of tables
+    :rtype: List[pa.Table]
+    """
+
     table = pa.concat_tables(tables)
     num_rows = table.num_rows
 
@@ -21,12 +30,3 @@ def compact_tables(tables, target_size_bytes):
         compacted.append(table.slice(start, length))
 
     return compacted
-
-def group_by_transaction_type(keys):
-    groups = defaultdict(list)
-    for key in keys:
-        if "transaction_type=" not in key:
-            continue
-        ttype = key.split("transaction_type=")[1].split("/")[0]
-        groups[ttype].append(key)
-    return groups

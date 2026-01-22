@@ -33,7 +33,7 @@ services:
     depends_on:
       - kafka
     volumes:
-      - ./scripts-config:/scripts
+      - ./scripts/scripts-config:/scripts
     entrypoint:
       ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
     networks:
@@ -84,7 +84,7 @@ services:
     networks:
       - app-tier
     volumes:
-      - ./scripts-config:/scripts
+      - ./scripts/scripts-config:/scripts
     command: >
       sh -c "pip install --no-cache-dir boto3==1.40.50 && python /scripts/create_buckets.py"
 
@@ -133,19 +133,16 @@ services:
     networks:
       - app-tier
 
-  partitioner:
+  processor:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.partitioner
-    image: trstream-partitioner:latest
+      dockerfile: ./docker/services/Dockerfile.processor
+    image: trstream-processor:latest
     depends_on:
       minio:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - BUCKET_SRC=raw-data
-      - BUCKET_TRG=tb-transactions
     networks:
       - app-tier
 
@@ -190,5 +187,41 @@ services:
       - "8501:8501"
     depends_on:
       - querier
+    networks:
+      - app-tier
+
+  ##########################
+  # INTEGRATIONS
+  ##########################
+  stripe-webhook:
+    build:
+      context: .
+      dockerfile: ./docker/services/integrations/stripe/Dockerfile.webhook
+    image: trstream-stripe-webhook:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - BATCH_SIZE_LOG=400
+      - MAX_SEND_RETRIES=5
+    ports:
+      - "8100:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-tier
+
+  stripe-generator:
+    build:
+      context: .
+      dockerfile: ./docker/services/integrations/stripe/Dockerfile.generator
+    image: trstream-stripe-generator:latest
+    depends_on:
+      stripe-webhook:
+        condition: service_healthy
     networks:
       - app-tier

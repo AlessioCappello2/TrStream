@@ -9,6 +9,14 @@ class S3Reader:
 
 
     def list_objects_page(self, prefix=None, continuation_token=None):
+        """
+        Retrieve file keys given a certain prefix and continuation token to keep track of the pagination.
+        
+        :param self: S3Reader instance
+        :param prefix: common prefix to files to retrieve
+        :param continuation_token: continuation token for pagination
+        """
+        
         kwargs = {"Bucket": self.bucket}
 
         if prefix:
@@ -28,6 +36,12 @@ class S3Reader:
 
 
     def read_parquets(self, keys):
+        """
+        Return a list of Arrow tables given a list of file keys.
+        
+        :param self: S3Reader instance
+        :param keys: keys to retrieve
+        """
         tables = []
 
         for key in keys:

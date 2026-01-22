@@ -1,0 +1,13 @@
+rate:
+  min_sleep_sec: 1
+  max_sleep_sec: 10
+
+events:
+  amount:
+    min: 500  # min units of currency (eur -> cent)
+    max: 50000
+  currency: eur
+  payment_methods:
+    - pm_card_it
+    - pm_card_ie
+    - pm_card_es

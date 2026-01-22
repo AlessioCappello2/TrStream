@@ -10,3 +10,9 @@ TRANSACTION_SCHEMA = pa.schema([
     ('transaction_type', pa.string()),
     ('status', pa.string())
 ])
+
+MESSAGES_SCHEMA = pa.schema([
+    pa.field("source", pa.string()),
+    pa.field("received_at", pa.string()),
+    pa.field("payload", pa.string())
+])
