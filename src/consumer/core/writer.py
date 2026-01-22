@@ -13,7 +13,7 @@ class ParquetS3Writer:
         self.file_key = file_key
         self.schema = schema
 
-    def write(self, records, source, dt, batch_id):
+    def write(self, records, source, dt, hr, batch_id):
         if not records:
             return
 
@@ -21,7 +21,7 @@ class ParquetS3Writer:
         buffer = io.BytesIO()
         pq.write_table(table, buffer)
 
-        key = f"source={source}/year={dt[:4]}/month={dt[5:7]}/day={dt[8:]}/{self.file_key}_batch_{batch_id:07d}.parquet"
+        key = f"source={source}/year={dt[:4]}/month={dt[5:7]}/day={dt[8:]}/hr={hr:02d}/{self.file_key}_batch_{batch_id:05d}.parquet"
         self.s3.put_object(
             Bucket=self.bucket,
             Key=key,

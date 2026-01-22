@@ -1,0 +1,9 @@
+batch_size: 50
+process:
+  mode: single_day              # single_day | range
+  date: 2026-01-22              # used when single_day
+  start_date: 2025-01-01        # used when range
+  end_date: 2025-01-10          # used when range
+  sources:
+    - faker
+    - stripe

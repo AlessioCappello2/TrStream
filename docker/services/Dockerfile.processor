@@ -1,6 +1,6 @@
-# Dockerfile.partitioner
+# Dockerfile.processor
 
-# Raw data partitioner service 
+# Raw data processor service 
 FROM trstream-base
 WORKDIR /app
 
@@ -10,10 +10,10 @@ RUN uv sync --locked --no-dev --active
 
 # Copy source code
 RUN mkdir -p src 
-COPY src/partitioner ./src/partitioner
+COPY src/processor ./src/processor
 
 # Python path
 ENV PYTHONPATH=/app/src
 
 # entrypoint
-CMD ["python", "-m", "partitioner.main"]
+CMD ["python", "-m", "processor.main"]

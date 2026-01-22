@@ -133,19 +133,16 @@ services:
     networks:
       - app-tier
 
-  partitioner:
+  processor:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.partitioner
-    image: trstream-partitioner:latest
+      dockerfile: ./docker/services/Dockerfile.processor
+    image: trstream-processor:latest
     depends_on:
       minio:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - BUCKET_SRC=raw-data
-      - BUCKET_TRG=tb-transactions
     networks:
       - app-tier
 

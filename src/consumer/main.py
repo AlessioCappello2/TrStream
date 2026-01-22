@@ -118,21 +118,21 @@ def main():
             for msg in messages:
                 decoded = json.loads(msg.value.decode())
                 try:
-                    record, iso_dt = validate_and_normalize_event(decoded)
+                    record, iso_dt, hr = validate_and_normalize_event(decoded)
                 except ValueError:
                     continue
 
                 count += 1
-                records[(record['source'], iso_dt)].append(record)
+                records[(record['source'], iso_dt, hr)].append(record)
                 partition_offsets[tp] = msg.offset + 1
 
         # Single flush condition
         if records and (count >= limit_msg or time.time() - start_time >= limit_time):
             logger.debug(f"Flushing {count} messages across {len(records)} partitions...")
-            for (source, dt), messages in records.items():
-                bid = batch_ids[(source, dt)] 
-                writer.write(records=messages, source=source, dt=dt, batch_id=bid)
-                batch_ids[(source, dt)] += 1
+            for (source, dt, hr), messages in records.items():
+                bid = batch_ids[(source, dt, hr)] 
+                writer.write(records=messages, source=source, dt=dt, hr=hr, batch_id=bid)
+                batch_ids[(source, dt, hr)] += 1
             
             offsets = {
                tp: OffsetAndMetadata(offset=offset, metadata=None, leader_epoch=-1)
@@ -148,9 +148,9 @@ def main():
 
     if records:
         logger.info("Flushing remaining records...")
-        for (source, dt), messages in records.items():
-            bid = batch_ids[(source, dt)] 
-            writer.write(records=messages, source=source, dt=dt, batch_id=bid)
+        for (source, dt, hr), messages in records.items():
+            bid = batch_ids[(source, dt, hr)] 
+            writer.write(records=messages, source=source, dt=dt, hr=hr, batch_id=bid)
 
         offsets = {
             tp: OffsetAndMetadata(offset=offset, metadata=None, leader_epoch=-1)
