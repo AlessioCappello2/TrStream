@@ -11,7 +11,7 @@ s3 = boto3.client(
 buckets = [
     os.environ["MINIO_INGESTION_BUCKET"], 
     os.environ["MINIO_PROCESSED_BUCKET"], 
-    os.environ["MINIO_TB_BUCKET"]
+    os.environ["MINIO_ANALYTICS_BUCKET"]
 ]
 
 for bucket in buckets:

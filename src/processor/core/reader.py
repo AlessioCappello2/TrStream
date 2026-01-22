@@ -9,21 +9,6 @@ class S3Reader:
         self.bucket = bucket
         self.logger = logger
 
-
-    def list_objects_page(self, continuation_token=None):
-        kwargs = {"Bucket": self.bucket}
-        if continuation_token:
-            kwargs["ContinuationToken"] = continuation_token
-
-        resp = self.s3.list_objects_v2(**kwargs)
-
-        keys = [obj["Key"] for obj in resp.get("Contents", [])]
-        return (
-            keys,
-            resp.get("NextContinuationToken"),
-            resp.get("IsTruncated", False),
-        )
-
     
     def read_parquets(self, prefix: str) -> list[pa.Table]:
         """
@@ -31,6 +16,9 @@ class S3Reader:
         
         :self: S3Reader instance
         :prefix: common prefix for all parquet files to retrieve
+
+        :return: list of Arrow tables representing the parquet files
+        :rtype: list[pa.Table]
         """
         tables = []
         continuation = None

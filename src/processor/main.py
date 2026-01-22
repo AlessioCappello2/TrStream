@@ -70,7 +70,8 @@ def main():
 
             daily_tables = []
 
-            for hour in range(24):
+            # Process every hour of the day
+            for hour in range(24): 
                 prefix = (
                     f"source={source}/"
                     f"year={date.year}/month={date.month:02d}/day={date.day:02d}/"
@@ -99,7 +100,6 @@ def main():
 
             # Write daily partition
             final_table = pa.concat_tables(daily_tables)
-
             writer.write_partition(
                 source=source,
                 year=date.year,

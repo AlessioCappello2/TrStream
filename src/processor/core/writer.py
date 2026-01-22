@@ -14,7 +14,19 @@ class S3Writer:
         self.logger = logger
 
 
-    def _key(self, source, year, month, day):
+    def _key(self, source: str, year: str, month: str, day: str) -> str:
+        """
+        Build the file key given the input parameters.
+        
+        :param self: S3Writer instance
+        :param source: source
+        :param year: year
+        :param month: month
+        :param day: day
+
+        :return: file key
+        :rtype: str
+        """
         commit_time = datetime.now().strftime("%Y%m%dT%H%M%SZ")
         uid = uuid.uuid4().hex[:8]
 
@@ -26,6 +38,18 @@ class S3Writer:
 
 
     def write_partition(self, source, year, month, day, table):
+        """
+        Write a partition to S3.
+
+        :param self: S3Writer instance
+        :param source: source
+        :param year: year
+        :param month: month
+        :param day: day
+
+        :return: file key
+        :rtype: str
+        """
         key = self._key(source, year, month, day)
 
         buffer = io.BytesIO()

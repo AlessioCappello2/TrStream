@@ -3,6 +3,9 @@ import pyarrow as pa
 from datetime import datetime
 from typing import List, Dict
 
+###################################################
+# SCHEMAS
+###################################################
 FAKER_SCHEMA = pa.schema([
     pa.field("source", pa.string()),
     pa.field("received_at", pa.timestamp("ms")),
@@ -23,13 +26,33 @@ STRIPE_SCHEMA = pa.schema([
     pa.field("payment_method", pa.string()),   
 ])
 
-
+###################################################
+# FUNCTIONS
+###################################################
 def _decode_payload_column(table: pa.Table) -> List[Dict]:
+    """
+    Parse the payload column content for a given Arrow table.
+    
+    :param table: input table containing the payload column
+    :type table: pa.Table
+
+    :return: list of dictionaries representing the payload fields
+    :rtype: List[Dict]
+    """
     payload_column = table["payload"].to_pylist()
     return [json.loads(p) for p in payload_column]
 
 
 def normalize_faker(table: pa.Table) -> pa.Table:
+    """
+    Normalize and filter faker data contained in a given Arrow table.
+    
+    :param table: input faker table
+    :type table: pa.Table
+
+    :return: normalized table ready to be written to S3
+    :rtype: pa.Table
+    """
     payloads = _decode_payload_column(table)
 
     rows = []
@@ -55,6 +78,15 @@ def normalize_faker(table: pa.Table) -> pa.Table:
     
 
 def normalize_stripe(table: pa.Table) -> pa.Table:
+    """
+    Normalize and filter stripe data contained in a given Arrow table.
+    
+    :param table: input stripe table
+    :type table: pa.Table
+
+    :return: normalized table ready to be written to S3
+    :rtype: pa.Table
+    """
     payloads = _decode_payload_column(table)
 
     rows = []
