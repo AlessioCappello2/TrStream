@@ -1,11 +1,14 @@
 # Scripts
 
-A small set of helper scripts is provided to simplify common development and demo workflows. They are optional convenience wrappers around **Docker Compose**, not a replacement for it.
+A set of helper scripts is provided to simplify common development and demo workflows. These scripts are **optional convenience wrappers around Docker Compose**, not a replacement for it.
 
 For advanced or fine-grained control, you are encouraged to interact with Docker Compose directly.
 
+Details on handling external integrations can be found in each integration's README:
+- Stripe: [README.md](https://github.com/AlessioCappello2/TrStream/tree/main/scripts/scripts-cli/stripe/README.md)
+
 ### build.sh
-Builds all Docker images defined in docker-compose.yml. It builds, in order, the base image and then all the services images. It is recommended for a first-time setup. 
+Builds all Docker images defined in docker-compose.yml. The script builds the base image first, followed by all service images. It is recommended for a first-time setup or after making changes to Dockerfiles. 
 
 #### Usage:
 ```
@@ -13,7 +16,7 @@ bash build.sh
 ```
 
 ### run.sh
-Starts the essential pipeline services required for data ingestion and storage:
+Starts the core pipeline services required for data ingestion and storage:
 - Kafka + topic initialization
 - MinIO + bucket initialization
 - Producer
@@ -59,7 +62,7 @@ bash shutdown.sh
 ## Advanced usage
 These scripts intentionally cover only the most common workflows.
 
-For fine-grained control (running a single service, inspecting logs, restarting components, etc.), use Docker Compose directly.
+For fine-grained control (running individual services, inspecting logs, restarting components, etc.), interact with Docker Compose directly.
 
 Some examples:
 ```

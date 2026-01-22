@@ -33,7 +33,7 @@ services:
     depends_on:
       - kafka
     volumes:
-      - ./scripts-config:/scripts
+      - ./scripts/scripts-config:/scripts
     entrypoint:
       ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
     networks:
@@ -84,7 +84,7 @@ services:
     networks:
       - app-tier
     volumes:
-      - ./scripts-config:/scripts
+      - ./scripts/scripts-config:/scripts
     command: >
       sh -c "pip install --no-cache-dir boto3==1.40.50 && python /scripts/create_buckets.py"
 
