@@ -225,3 +225,9 @@ services:
         condition: service_healthy
     networks:
       - app-tier
+
+  revolut-generator:
+    build:
+      context: .
+      dockerfile: ./docker/services/integrations/revolut/Dockerfile.generator
+    image: trstream-revolut-generator:latest

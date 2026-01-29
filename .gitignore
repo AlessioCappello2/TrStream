@@ -11,3 +11,5 @@ stripe.env
 stripe_test.py
 .stripe.pid
 stripe.log
+
+keys/
