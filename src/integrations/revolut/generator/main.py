@@ -46,7 +46,7 @@ def trigger_transfer():
         },
         data={
             "grant_type": "authorization_code",
-            "code": "oa_sand_tGhYdPOLNbk7voLs6AtKzrjMvt-wgOOX7LbI6NmuTr8",
+            "code": "oa_sand_xxxx",
             "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             "client_assertion": myjwt  # You need to generate this
         },
@@ -201,11 +201,136 @@ def trigger_transfer_2():
 
     if not response.ok:
         raise RuntimeError(response.text)
+    
 
+def simulate_transfer():
+    access_token = get_valid_access_token()
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    request_id = str(uuid.uuid4())
+
+    payload = {
+        "request_id": request_id,
+        "source_account_id": "source",
+        "target_account_id": "target",
+        "amount": 1,
+        "currency": "GBP"
+    }
+
+    response = requests.post("https://sandbox-b2b.revolut.com/api/1.0/transfer", json=payload, headers=headers)
+
+    print(response.status_code, flush=True)
+    print(response.text, flush=True)
+
+
+
+#######################################################
+# from datetime import datetime, timezone 
+# import random
+# import hashlib
+# import hmac
+
+# def generate_signature(payload: bytes) -> str:
+#     """
+#     Generates HMAC SHA256 signature.
+#     """
+#     secret_bytes = WEBHOOK_SECRET.encode("utf-8")
+#     signature = hmac.new(secret_bytes, payload, hashlib.sha256).hexdigest()
+#     return signature
+
+# def send_event(payload: dict):
+#     body = json.dumps(payload).encode("utf-8")
+#     signature = generate_signature(body)
+
+#     headers = {
+#         "Content-Type": "application/json",
+#         "Revolut-Signature": signature,
+#     }
+
+#     response = requests.post(WEBHOOK_URL, data=body, headers=headers)
+
+#     print(f"Sent {payload['event']} | Status: {response.status_code}")
+#     if response.status_code != 200:
+#         print("Response:", response.text)
+
+# def create_transaction():
+#     tx_id = f"tx_{uuid.uuid4().hex[:10]}"
+
+#     payload = {
+#         "event": "TransactionCreated",
+#         "timestamp": datetime.now(timezone.utc).isoformat(),
+#         "data": {
+#             "id": tx_id,
+#             "account_id": "acc_001",
+#             "amount": round(random.uniform(10, 500), 2),
+#             "currency": "EUR",
+#             "state": "PENDING",
+#             "description": "Test Purchase",
+#         }
+#     }
+
+#     send_event(payload)
+#     return tx_id
+
+
+# def update_transaction_state(tx_id):
+#     payload = {
+#         "event": "TransactionStateChanged",
+#         "timestamp": datetime.now(timezone.utc).isoformat(),
+#         "data": {
+#             "id": tx_id,
+#             "previous_state": "PENDING",
+#             "new_state": "COMPLETED",
+#         }
+#     }
+
+#     send_event(payload)
+
+WEBHOOK_URL = "https://revolut-webhook.vercel.app/api/webhook"
+
+def register_webhook():
+    access_token = get_valid_access_token()
+
+    url = "https://sandbox-b2b.revolut.com/api/1.0/webhook"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "url": WEBHOOK_URL,
+        "events": [
+            "TransactionCreated",
+            "TransactionStateChanged"
+        ]
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    print(response.status_code, flush=True)
+    print(response.text, flush=True)
+
+
+def trigger_vercel():
+    
+    payload = {
+        "event": "TransactionCreated",
+        "data": {"id": "tx_123", "amount": 100, "currency": "EUR", "state": "PENDING"}
+    }
+
+    requests.post(WEBHOOK_URL, json=payload)
 
 if __name__ == "__main__":
     if not TOKEN_PATH.exists():
         initial_authorization(OA_CODE)
-    while True:
-        trigger_transfer_2()
-        time.sleep(25)
+        register_webhook()
+    #trigger_transfer_2()
+    simulate_transfer()
+    #while True:
+        #trigger_transfer_2()
+        #time.sleep(25)
+    #trigger_vercel()

@@ -476,6 +476,34 @@ wheels = [
 ]
 
 [[package]]
+name = "httpcore"
+version = "1.0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "h11" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/94/82699a10bca87a5556c9c59b5963f2d039dbd239f25bc2a63907a05a14cb/httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8", size = 85484, upload-time = "2025-04-24T22:06:22.219Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55", size = 78784, upload-time = "2025-04-24T22:06:20.566Z" },
+]
+
+[[package]]
+name = "httpx"
+version = "0.28.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "certifi" },
+    { name = "httpcore" },
+    { name = "idna" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
 name = "idna"
 version = "3.11"
 source = { registry = "https://pypi.org/simple" }
@@ -1607,6 +1635,10 @@ revolut-generator = [
     { name = "pyjwt", extra = ["crypto"] },
     { name = "requests" },
 ]
+revolut-worker = [
+    { name = "kafka-python" },
+    { name = "upstash-redis" },
+]
 streamlit = [
     { name = "pandas" },
     { name = "requests" },
@@ -1631,6 +1663,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'stripe-webhook'", specifier = "==0.120.4" },
     { name = "kafka-python", marker = "extra == 'consumer'", specifier = "==2.2.15" },
     { name = "kafka-python", marker = "extra == 'producer'", specifier = "==2.2.15" },
+    { name = "kafka-python", marker = "extra == 'revolut-worker'", specifier = "==2.2.15" },
     { name = "kafka-python", marker = "extra == 'stripe-webhook'", specifier = "==2.2.15" },
     { name = "pandas", marker = "extra == 'querier'", specifier = "==2.3.3" },
     { name = "pandas", marker = "extra == 'streamlit'", specifier = "==2.3.3" },
@@ -1643,10 +1676,11 @@ requires-dist = [
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = "==1.52.0" },
     { name = "stripe", marker = "extra == 'stripe-generator'", specifier = "==14.1.0" },
     { name = "stripe", marker = "extra == 'stripe-webhook'", specifier = "==14.1.0" },
+    { name = "upstash-redis", marker = "extra == 'revolut-worker'", specifier = "==1.5.0" },
     { name = "uvicorn", marker = "extra == 'querier'", specifier = "==0.38.0" },
     { name = "uvicorn", marker = "extra == 'stripe-webhook'", specifier = "==0.38.0" },
 ]
-provides-extras = ["producer", "consumer", "querier", "streamlit", "stripe-webhook", "stripe-generator", "revolut-generator"]
+provides-extras = ["producer", "consumer", "querier", "streamlit", "stripe-webhook", "stripe-generator", "revolut-generator", "revolut-worker"]
 
 [[package]]
 name = "typing-extensions"
@@ -1676,6 +1710,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+]
+
+[[package]]
+name = "upstash-redis"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/62/bc53c35fbf4e2b774ab0eb02f3908cfe89b6636e87cdc40b264a4fc1dcce/upstash_redis-1.5.0.tar.gz", hash = "sha256:1917d4d009ca803815092892d92c7da9138b4ada6b353974fb74caf063c6d2a3", size = 39356, upload-time = "2025-10-22T10:15:34.608Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5a/87/d24541a1d9c29033e74aa05b5d8b4857feff79344ebd8fca410eb4683795/upstash_redis-1.5.0-py3-none-any.whl", hash = "sha256:e08de1f74d3fb48a81b383c00398cc9336c43b65b82e6d9266312143970800b9", size = 41088, upload-time = "2025-10-22T10:15:33.363Z" },
 ]
 
 [[package]]

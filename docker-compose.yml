@@ -231,3 +231,17 @@ services:
       context: .
       dockerfile: ./docker/services/integrations/revolut/Dockerfile.generator
     image: trstream-revolut-generator:latest
+
+  revolut-worker:
+    build:
+      context: .
+      dockerfile: ./docker/services/integrations/revolut/Dockerfile.worker
+    image: trstream-revolut-worker:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - BATCH_SIZE_LOG=400
+      - MAX_SEND_RETRIES=5
+    networks:
+      - app-tier
