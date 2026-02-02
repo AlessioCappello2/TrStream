@@ -226,6 +226,14 @@ services:
     networks:
       - app-tier
 
+  revolut-setup:
+    build: 
+      context: .
+      dockerfile: ./docker/services/integrations/revolut/Dockerfile.setup
+    image: trstream-revolut-setup:latest
+    stdin_open: true
+    tty: true
+
   revolut-generator:
     build:
       context: .

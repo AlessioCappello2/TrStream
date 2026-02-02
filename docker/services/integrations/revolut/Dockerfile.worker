@@ -11,6 +11,7 @@ RUN uv sync --locked --no-dev --extra revolut-worker --active
 # Copy source code
 RUN mkdir -p src 
 COPY src/integrations/revolut/worker ./src/worker
+COPY src/integrations/revolut/revolut.env ./src/revolut.env
 
 # Python path
 ENV PYTHONPATH=/app/src

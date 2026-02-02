@@ -33,7 +33,7 @@ At a high level, the pipeline:
 All components are containerized and orchestrated with Docker Compose, allowing horizontal scaling of producers and consumers.
 
 ## Architecture
-![Architecture](images/Architecture_v1.2.svg)
+![Architecture](images/Architecture_v2.1.svg)
 
 ## Data flow
 - **Event sources**

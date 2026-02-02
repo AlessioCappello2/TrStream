@@ -1,14 +1,14 @@
 import time
 import json
-import logging 
 
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from ..config.settings import settings
+from ..config.logging_config import setup_logging
 
-logger = logging.getLogger("trstream.stripe.webhook")
+logger = setup_logging()
 
-class RevolutKafkaProducer(KafkaProducer):
+class RevolutKafkaProducer:
     def __init__(self):
         try:
             self.producer = KafkaProducer(
