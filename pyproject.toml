@@ -28,7 +28,7 @@ querier = [
     "pandas==2.3.3"
 ]
 
-streamlit = [
+editor = [
     "streamlit==1.52.0",
     "pandas==2.3.3",
     "requests==2.32.5"

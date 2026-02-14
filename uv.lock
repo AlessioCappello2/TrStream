@@ -1621,6 +1621,11 @@ dependencies = [
 consumer = [
     { name = "kafka-python" },
 ]
+editor = [
+    { name = "pandas" },
+    { name = "requests" },
+    { name = "streamlit" },
+]
 producer = [
     { name = "faker" },
     { name = "kafka-python" },
@@ -1645,11 +1650,6 @@ revolut-worker = [
     { name = "kafka-python" },
     { name = "upstash-redis" },
 ]
-streamlit = [
-    { name = "pandas" },
-    { name = "requests" },
-    { name = "streamlit" },
-]
 stripe-generator = [
     { name = "stripe" },
 ]
@@ -1671,17 +1671,17 @@ requires-dist = [
     { name = "kafka-python", marker = "extra == 'producer'", specifier = "==2.2.15" },
     { name = "kafka-python", marker = "extra == 'revolut-worker'", specifier = "==2.2.15" },
     { name = "kafka-python", marker = "extra == 'stripe-webhook'", specifier = "==2.2.15" },
+    { name = "pandas", marker = "extra == 'editor'", specifier = "==2.3.3" },
     { name = "pandas", marker = "extra == 'querier'", specifier = "==2.3.3" },
-    { name = "pandas", marker = "extra == 'streamlit'", specifier = "==2.3.3" },
     { name = "pyarrow", specifier = "==22.0.0" },
     { name = "pydantic-settings", specifier = "==2.12.0" },
     { name = "pyjwt", extras = ["crypto"], marker = "extra == 'revolut-generator'", specifier = "==2.10.1" },
     { name = "pyjwt", extras = ["crypto"], marker = "extra == 'revolut-setup'", specifier = "==2.10.1" },
     { name = "pyyaml", specifier = "==6.0.3" },
+    { name = "requests", marker = "extra == 'editor'", specifier = "==2.32.5" },
     { name = "requests", marker = "extra == 'revolut-generator'", specifier = "==2.32.5" },
     { name = "requests", marker = "extra == 'revolut-setup'", specifier = "==2.32.5" },
-    { name = "requests", marker = "extra == 'streamlit'", specifier = "==2.32.5" },
-    { name = "streamlit", marker = "extra == 'streamlit'", specifier = "==1.52.0" },
+    { name = "streamlit", marker = "extra == 'editor'", specifier = "==1.52.0" },
     { name = "stripe", marker = "extra == 'stripe-generator'", specifier = "==14.1.0" },
     { name = "stripe", marker = "extra == 'stripe-webhook'", specifier = "==14.1.0" },
     { name = "upstash-redis", marker = "extra == 'revolut-generator'", specifier = "==1.5.0" },
@@ -1690,7 +1690,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'querier'", specifier = "==0.38.0" },
     { name = "uvicorn", marker = "extra == 'stripe-webhook'", specifier = "==0.38.0" },
 ]
-provides-extras = ["producer", "consumer", "querier", "streamlit", "stripe-webhook", "stripe-generator", "revolut-setup", "revolut-generator", "revolut-worker"]
+provides-extras = ["producer", "consumer", "querier", "editor", "stripe-webhook", "stripe-generator", "revolut-setup", "revolut-generator", "revolut-worker"]
 
 [[package]]
 name = "typing-extensions"

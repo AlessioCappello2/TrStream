@@ -35,7 +35,7 @@ services:
     volumes:
       - ./scripts/scripts-config:/scripts
     entrypoint:
-      ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "transactions-trial", "3600000"]
+      ["/bin/bash", "/scripts/create-topics.sh", "kafka:9092", "3600000", "transactions-faker", "transactions-stripe", "transactions-revolut"]
     networks:
       - app-tier
     restart:
@@ -57,9 +57,6 @@ services:
     image: minio/minio
     container_name: minio
     command: server /data --console-address ":9001"
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
-      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -71,6 +68,8 @@ services:
       start_period: 15s
     volumes:
       - ./minio/data:/data
+    env_file:
+      - ./config/env/services/minio.env
     networks:
       - app-tier
 
@@ -80,7 +79,7 @@ services:
       minio:
         condition: service_healthy
     env_file:
-      - .env
+      - ./config/env/services/minio.env
     networks:
       - app-tier
     volumes:
@@ -91,7 +90,7 @@ services:
   producer:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.producer
+      dockerfile: ./config/docker/services/Dockerfile.producer
     image: trstream-producer:latest
     restart: unless-stopped
     depends_on:
@@ -99,20 +98,15 @@ services:
         condition: service_healthy
       kafka-config:
         condition: service_completed_successfully
-    environment:
-      - BATCH_SIZE_LOG=100
-      - MAX_SEND_RETRIES=5
     env_file:
-      - .env
-    volumes: 
-      - ./src/producer:/app/src/producer
+      - ./config/env/services/producer.env
     networks:
       - app-tier
 
   consumer:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.consumer
+      dockerfile: ./config/docker/services/Dockerfile.consumer
     image: trstream-consumer:latest
     restart: unless-stopped
     depends_on:
@@ -124,65 +118,61 @@ services:
         condition: service_completed_successfully
       minio-config:
         condition: service_completed_successfully
-    environment:
-      - BUCKET_NAME=raw-data
     env_file:
-      - .env
-    volumes:
-      - ./src/consumer:/app/src/consumer
+      - ./config/env/services/consumer.env
     networks:
       - app-tier
 
   processor:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.processor
+      dockerfile: ./config/docker/services/Dockerfile.processor
     image: trstream-processor:latest
     depends_on:
       minio:
         condition: service_healthy
     env_file:
-      - .env
+      - ./config/env/services/processor.env
     networks:
       - app-tier
 
   compacter:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.compacter
+      dockerfile: ./config/docker/services/Dockerfile.compacter
     image: trstream-compacter:latest
     depends_on:
       minio:
         condition: service_healthy
     env_file:
-      - .env
-    environment:
-      - BUCKET_NAME=tb-transactions
+      - ./config/env/services/compacter.env
     networks:
       - app-tier  
 
   querier:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.querier
+      dockerfile: ./config/docker/services/Dockerfile.querier
     image: trstream-querier:latest
+    container_name: querier
     depends_on:
       minio:
         condition: service_healthy
     env_file:
-      - .env
+      - ./config/env/services/querier.env
     ports:
       - "8000:8000"
     networks:
       - app-tier  
 
-  streamlit:
+  editor:
     build:
       context: .
-      dockerfile: ./docker/services/Dockerfile.streamlit
-    image: trstream-streamlit:latest
+      dockerfile: ./config/docker/services/Dockerfile.editor
+    image: trstream-editor:latest
+    container_name: editor
     env_file:
-      - .env
+      - ./config/env/services/editor.env
     ports:
       - "8501:8501"
     depends_on:

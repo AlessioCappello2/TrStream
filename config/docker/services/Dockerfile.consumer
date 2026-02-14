@@ -1,0 +1,27 @@
+# Dockerfile.consumer
+
+# Kafka Consumer service
+FROM trstream-base
+WORKDIR /app
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra consumer --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/services/consumer ./src/consumer
+
+# Copy shared modules
+COPY src/shared/config ./src/shared/config
+COPY src/shared/kafka/consumer.py ./src/shared/kafka/consumer.py
+COPY src/shared/minio/writer.py ./src/shared/minio/writer.py
+
+# Copy config files
+COPY config/yaml/services/consumer.yaml ./src/consumer.yaml
+
+# Python path
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+CMD ["python", "-m", "consumer.main"]
