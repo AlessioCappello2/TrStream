@@ -1,0 +1,32 @@
+# Dockerfile.generator
+
+# Revolut event generator service
+FROM trstream-base
+WORKDIR /app
+
+# install CA certificates
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra revolut-generator --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/integrations/revolut/generator ./src/generator
+
+# Copy keys
+COPY keys/private.pem ./src/certs/private.pem
+COPY keys/certificate.pem ./src/certs/public.pem
+
+# Copy shared modules
+COPY src/shared/config ./src/shared/config 
+
+# Copy config files
+COPY config/yaml/integrations/revolut/generator.yaml ./src/generator.yaml
+
+# Python path
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+CMD ["python", "-m", "generator.main"]

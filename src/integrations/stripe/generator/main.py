@@ -1,15 +1,18 @@
 import time
 import random
 import signal
+import logging
+from pathlib import Path
 
-from .config.load_config import load_config
-from .config.logging_config import setup_logging
-from .core.payment_intent_generator import create_payment_intent
+from shared.config.logging_config import setup_logging
+from shared.config.load_config import load_config_from_directory
+
+from generator.core.payment_intent_generator import create_payment_intent
 
 ####################################################################
 # Logging
 ####################################################################
-logger = setup_logging()
+logger = setup_logging(service_name="trstream.stripe.generator", suppress_loggers={"stripe": logging.CRITICAL})
 logger.info("Stripe generator service starting...")
 
 ####################################################################
@@ -30,7 +33,7 @@ def main():
     ####################################################################
     # Config reading
     ####################################################################
-    rate = load_config()['rate']
+    rate = load_config_from_directory(Path("src"), "generator.yaml")['rate']
 
     #####################################################################
     # Events generation

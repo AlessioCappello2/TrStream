@@ -1,0 +1,109 @@
+import streamlit as st
+
+from editor.config.settings import settings
+from editor.components.query_tab import render_query_tab
+from editor.components.alias_tab import render_alias_tab
+
+####################################################################
+# Env variables
+####################################################################
+API_BASE = settings.querier_api_base
+
+####################################################################
+# Frontend definition
+####################################################################
+st.set_page_config(
+    page_title="DuckDB SQL Editor", 
+    page_icon="🦆",
+    layout="wide"    
+)
+
+# Header
+st.title("DuckDB SQL Editor")
+
+tab_query, tab_alias = st.tabs(["Run Query", "Manage Aliases"])
+
+with tab_query:
+    render_query_tab(API_BASE)
+
+with tab_alias:
+    render_alias_tab(API_BASE)
+
+# # Tab query
+# with tab_query:
+#     st.subheader("Run SQL query")
+#     sql = st.text_area(
+#         "Enter SQL query:", 
+#         height=150,
+#         placeholder="SELECT * FROM read_parquet('s3://tb-transactions/**/*.parquet');",  
+#         help="Only SELECT and WITH queries are allowed."
+#     )
+
+#     if st.button("Run Query"):
+#         if not sql.strip():
+#             st.warning("Please enter a SQL query")
+#         else:
+#             try:
+#                 placeholder = st.empty()
+#                 start = time.perf_counter()
+#                 result_container = {"response": None}
+
+#                 def run_query():
+#                     try: 
+#                         result_container["response"] = requests.post(
+#                                                         f"{API_BASE}/query",
+#                                                         json={"sql": sql},
+#                                                     )
+#                     except Exception:
+#                         result_container["response"] = e
+#                         raise Exception
+                    
+#                 t = threading.Thread(target=run_query)
+#                 t.start()
+
+#                 while t.is_alive():
+#                     elapsed = time.perf_counter() - start 
+#                     placeholder.info(f"Running... {elapsed:.2f} sec")
+#                     time.sleep(0.1)
+
+#                 t.join()
+#                 placeholder.empty()
+
+#                 response = result_container["response"]
+#                 result = response.json()
+#                 response.raise_for_status()
+
+#                 placeholder.success(f"Completed in {elapsed:.2f} sec - {result['rows']} rows returned")
+#                 df = pd.DataFrame(result['data'])
+#                 st.dataframe(df)
+#             except Exception as e:
+#                 try:
+#                     detail = result_container["response"].json()["detail"]
+#                 except Exception:
+#                     detail = "Unknown internal error"
+#                 st.error(detail)
+
+# # Tab alias
+# with tab_alias:
+#     st.subheader("Create or Update Alias")
+
+#     alias_name = st.text_input("Alias name", key="alias_name", placeholder="transactions")
+#     alias_path = st.text_input("Parquet path", key="alias_path", placeholder="bucket/path/*.parquet")
+
+#     if st.button("Create Alias"):
+#         if not alias_name or not alias_path:
+#             st.error("Both alias name and path are required.")
+#         else:
+#             response = requests.post(
+#                 f"{API_BASE}/alias",
+#                 json={"name": alias_name, "path": alias_path}
+#             )
+
+#             if response.status_code == 200:
+#                 st.success(response.json()["detail"])
+#             else:
+#                 try:
+#                     detail = response.json().get("detail", "Unknown internal error")
+#                 except Exception:
+#                     detail = response.text
+#                 st.error(detail)

@@ -1,0 +1,26 @@
+# Dockerfile.worker
+
+# Revolut worker service
+FROM trstream-base
+WORKDIR /app
+
+# Copy toml and lock and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra revolut-worker --active
+
+# Copy source code
+RUN mkdir -p src 
+COPY src/integrations/revolut/worker ./src/worker
+
+# Copy shared modules
+COPY src/shared/config ./src/shared/config 
+COPY src/shared/kafka/producer.py ./src/shared/kafka/producer.py
+
+# Copy config files
+COPY config/yaml/integrations/revolut/worker.yaml ./src/worker.yaml
+
+# Python path
+ENV PYTHONPATH=/app/src
+
+# entrypoint
+CMD ["python", "-m", "worker.main"]

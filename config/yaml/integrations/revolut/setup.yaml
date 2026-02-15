@@ -1,0 +1,3 @@
+keys:
+  cert_path: "./src/certs/public.pem"
+  key_path: "./src/certs/private.pem"

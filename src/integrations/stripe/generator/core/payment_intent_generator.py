@@ -1,12 +1,13 @@
 import random
 import stripe
+from pathlib import Path
 
-from ..config.settings import settings
-from ..config.load_config import load_config
+from generator.config.settings import settings
+from shared.config.load_config import load_config_from_directory
 
 stripe.api_key = settings.stripe_secret_api_key
 
-cfg = load_config()
+cfg = load_config_from_directory(Path("src"), "generator.yaml")
 events_cfg = cfg['events']
 
 def create_payment_intent():

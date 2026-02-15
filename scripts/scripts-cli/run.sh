@@ -23,7 +23,7 @@ for arg in "$@"; do
             ;;
         *)
             echo "Unknown argument: $arg"
-            echo "Usage: bash run.sh [producer=N] [consumer=M]"
+            echo "Usage: run.sh [producer=N] [consumer=M]"
             exit 1
             ;;
     esac

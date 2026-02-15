@@ -1,0 +1,7 @@
+db_init:
+  max_retries: 5
+  retry_delay: 3
+
+duckdb:
+  use_ssl: False
+  http_keep_alive: False
