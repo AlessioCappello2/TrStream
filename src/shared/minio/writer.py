@@ -1,7 +1,6 @@
 import io
-import pyarrow.parquet as pq
 import logging
-
+import pyarrow.parquet as pq
 
 class BaseS3ParquetWriter:
     def __init__(self, s3_client, bucket, logger=None):

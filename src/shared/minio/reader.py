@@ -1,6 +1,6 @@
 import io
-import pyarrow.parquet as pq
 import pyarrow as pa
+import pyarrow.parquet as pq
 from typing import List, Tuple, Optional
 
 

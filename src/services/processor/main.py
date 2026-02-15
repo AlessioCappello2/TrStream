@@ -6,10 +6,11 @@ import pyarrow as pa
 from datetime import datetime
 from pathlib import Path
 
-from processor.config.settings import settings
-from processor.config.dates import resolve_dates
 from shared.config.logging_config import setup_logging
 from shared.config.load_config import load_config_from_directory
+
+from processor.config.settings import settings
+from processor.config.dates import resolve_dates
 
 from processor.core.reader import ProcessorS3ParquetReader 
 from processor.core.writer import ProcessorS3ParquetWriter

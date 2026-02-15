@@ -1,11 +1,11 @@
 import time
 import json
 import logging
-from typing import Optional, Callable, Any
+from typing import Optional, Callable
+
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, NoBrokersAvailable
-
-from ..config.logging_config import setup_logging
+from shared.config.logging_config import setup_logging
 
 logger = setup_logging(service_name="trstream.kafka.producer", suppress_loggers={"kafka": logging.CRITICAL})
 

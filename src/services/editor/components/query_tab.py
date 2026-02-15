@@ -3,7 +3,6 @@ import requests
 import threading
 import pandas as pd
 import streamlit as st
-from typing import Optional
 
 
 def render_query_tab(api_base: str):

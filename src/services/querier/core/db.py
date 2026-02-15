@@ -1,7 +1,7 @@
 import time
 import duckdb 
-from typing import Dict, Any
 from pathlib import Path
+from typing import Dict, Any
 
 from querier.config.settings import settings
 from shared.config.logging_config import setup_logging

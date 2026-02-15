@@ -2,13 +2,13 @@
 # IMPORTS #
 ####################################################################
 import boto3
+from pathlib import Path
 from datetime import datetime
 
-from compacter.config.settings import settings
 from shared.config.logging_config import setup_logging
 from shared.config.load_config import load_config_from_directory
-from pathlib import Path
 
+from compacter.config.settings import settings
 from compacter.config.dates import resolve_dates
 
 from compacter.core.reader import CompacterS3ParquetReader

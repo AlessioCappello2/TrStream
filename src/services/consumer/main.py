@@ -13,15 +13,15 @@ from pathlib import Path
 from kafka import OffsetAndMetadata
 from collections import defaultdict
 
-from consumer.config.settings import settings
-from shared.config.load_config import load_config_from_directory
 from shared.config.logging_config import setup_logging
+from shared.config.load_config import load_config_from_directory
 
-from consumer.core.writer import ConsumerS3ParquetWriter
+from consumer.config.settings import settings
+
 from consumer.core.schema import MESSAGES_SCHEMA
-from consumer.core.validate import validate_and_normalize_event
 from consumer.core.consumer import SafeKafkaConsumer
-#from consumer.core.consumer import SafeKafkaConsumer, KafkaUnavailable
+from consumer.core.writer import ConsumerS3ParquetWriter
+from consumer.core.validate import validate_and_normalize_event
 
 ####################################################################
 # Logging

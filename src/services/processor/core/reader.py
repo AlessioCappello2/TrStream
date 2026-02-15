@@ -1,5 +1,5 @@
-from shared.minio.reader import BaseS3ParquetReader
 import pyarrow as pa
+from shared.minio.reader import BaseS3ParquetReader
 
 class ProcessorS3ParquetReader:
     """

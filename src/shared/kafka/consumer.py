@@ -1,10 +1,10 @@
 import time
 import logging
 from typing import Optional, Iterable
+
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable, KafkaError
-
-from ..config.logging_config import setup_logging
+from shared.config.logging_config import setup_logging
 
 logger = setup_logging(
     service_name="trstream.kafka.consumer",
