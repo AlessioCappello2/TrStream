@@ -5,7 +5,8 @@ A set of helper scripts is provided to simplify common development and demo work
 For advanced or fine-grained control, you are encouraged to interact with Docker Compose directly.
 
 Details on handling external integrations can be found in each integration's README:
-- Stripe: [README.md](https://github.com/AlessioCappello2/TrStream/tree/main/scripts/scripts-cli/stripe/README.md)
+- Stripe: [README.md](https://github.com/AlessioCappello2/TrStream/tree/main/src/integrations/stripe/README.md)
+- Revolut: [README.md](https://github.com/AlessioCappello2/TrStream/tree/main/src/integrations/revolut/README.md)
 
 ### build.sh
 Builds all Docker images defined in docker-compose.yml. The script builds the base image first, followed by all service images. It is recommended for a first-time setup or after making changes to Dockerfiles. 
