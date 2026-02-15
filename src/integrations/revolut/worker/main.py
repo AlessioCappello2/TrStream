@@ -2,17 +2,21 @@ import json
 import time
 import signal
 import socket
+from pathlib import Path
 
 from upstash_redis import Redis
-from .config.settings import settings
-from .core.event_processor import process_event
-from .config.logging_config import setup_logging
-from .core.kafka_producer import RevolutKafkaProducer
+from shared.config.logging_config import setup_logging
+from shared.config.load_config import load_config_from_directory
+
+from worker.config.settings import settings
+from worker.core.event_processor import process_event
+from worker.core.kafka_producer import RevolutKafkaProducer
 
 ####################################################################
 # Logging
 ####################################################################
-logger = setup_logging()
+logger = setup_logging(service_name="trstream.revolut.worker")
+logger.info("Revolut worker service starting...")
 
 ####################################################################
 # Handle SIGTERM/SIGINT Exceptions
@@ -33,6 +37,10 @@ signal.signal(signal.SIGINT, handle_termination)
 WORKER_ID = socket.gethostname()
 PROCESSING_QUEUE = f"revolut-processing:{WORKER_ID}"
 MAIN_QUEUE = "revolut:queue"
+
+# Cfg 
+cfg = load_config_from_directory(Path("src"), "worker.yaml")
+batch_size_log = cfg['batch_size_log']
 
 # Redis Client
 redis = Redis(
@@ -88,7 +96,7 @@ def main():
             producer.send_event(processed_event)
             
             counter += 1
-            if counter % settings.batch_size_log == 0:
+            if counter % batch_size_log == 0:
                 producer.flush()
                 logger.info(f"No. of transactions sent: {counter}")
 

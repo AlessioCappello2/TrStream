@@ -1,17 +1,19 @@
 import sys
 import requests
+from pathlib import Path
 
-from .config.settings import settings
-from .config.load_config import load_config
-from .auth.auth_service import generate_jwt, save_tokens, load_tokens
+from setup.config.settings import settings
+from shared.config.load_config import load_config_from_directory
+from setup.auth.auth_service import generate_jwt, save_tokens, load_tokens
 
 ####################################################################
 # Constants, cfg and session
 ####################################################################
 REVOLUT_TOKEN_API = "https://sandbox-b2b.revolut.com/api/1.0/auth/token"
 REVOLUT_WEBHOOK_API = "https://sandbox-b2b.revolut.com/api/2.0/webhooks"
+REVOLUT_ACCOUNT_API = "https://sandbox-b2b.revolut.com/api/1.0/accounts"
 
-cfg = load_config()
+cfg = load_config_from_directory(Path("src"), "setup.yaml")
 CERT_PATH, KEY_PATH = cfg['keys']['cert_path'], cfg['keys']['key_path']
 
 session = requests.Session()
@@ -231,6 +233,56 @@ def check_tokens():
         return False
 
 
+def list_accounts():
+    """List all Revolut accounts"""
+    try:
+        tokens = load_tokens()
+        if not tokens:
+            print("No tokens found. Please authenticate first (option 1)")
+            return False
+
+        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+        print("Fetching accounts...")
+        response = requests.get(
+            REVOLUT_ACCOUNT_API,
+            headers=headers
+        )
+
+        if response.ok:
+            accounts = response.json()
+            
+            if not accounts:
+                print("No accounts found")
+                return True
+            
+            print(f"\n{'='*80}")
+            print(f"Found {len(accounts)} account(s):")
+            print(f"{'='*80}")
+            
+            for i, acc in enumerate(accounts, 1):
+                print(f"\n{i}. Account ID: {acc.get('id')}")
+                print(f"   Name: {acc.get('name')}")
+                print(f"   Currency: {acc.get('currency')}")
+                print(f"   Balance: {acc.get('balance')}")
+                print(f"   State: {acc.get('state')}")
+                print(f"   Created: {acc.get('created_at')}")
+            
+            print(f"\n{'='*60}")
+            print("\nIMPORTANT: Copy the Account IDs you want to use")
+            print("Add them to config/env/integrations/revolut/revolut.env:")
+            print("  REVOLUT_SOURCE_ACCOUNT=<account_id>")
+            print("  REVOLUT_TARGET_ACCOUNT=<account_id>")
+            print(f"{'='*60}")
+            return True
+        else:
+            print(f"Failed to list accounts: {response.status_code}, {response.text}")
+            return False
+
+    except Exception as e:
+        print(f"Failed to list accounts: {e}")
+        return False
+
 def quick_setup():
     """Run complete setup flow"""
     print("\n" + "="*60)
@@ -238,17 +290,21 @@ def quick_setup():
     print("="*60 + "\n")
     
     # Step 1: Authenticate
-    print("Step 1/2: Authentication")
+    print("Step 1/3: Authentication")
     if not authenticate():
         print("Setup failed at authentication step")
         return False
     
     # Step 2: Register webhook
-    print("\nStep 2/2: Webhook Registration")
+    print("\nStep 2/3: Webhook Registration")
     if not register_webhook():
         print("Setup failed at webhook registration step")
         return False
     
+    # Step 3: List accounts
+    print("\nStep 3/3: Listing Accounts")
+    list_accounts()
+
     print("\n" + "="*60)
     print("SETUP COMPLETE!")
     print("="*60)
@@ -265,7 +321,8 @@ def show_menu():
     print("3. List webhooks")
     print("4. Delete webhook")
     print("5. Check token status")
-    print("6. Quick setup (auth + webhook)")
+    print("6. List accounts")
+    print("7. Quick setup (auth + webhook)")
     print("0. Exit")
     print("\n" + "="*60)
 
@@ -289,6 +346,8 @@ def main():
             elif choice == '5':
                 check_tokens()
             elif choice == '6':
+                list_accounts()
+            elif choice == '7':
                 quick_setup()
             elif choice == '0':
                 print("Exiting...")

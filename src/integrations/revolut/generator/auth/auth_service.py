@@ -2,10 +2,11 @@ import jwt
 import time
 import json
 import requests
+from pathlib import Path
 
 from upstash_redis import Redis
-from ..config.settings import settings
-from ..config.load_config import load_config
+from generator.config.settings import settings
+from shared.config.load_config import load_config_from_directory
 
 ####################################################################
 # Constants and cfg
@@ -14,7 +15,7 @@ REVOLUT_TOKEN_API = "https://sandbox-b2b.revolut.com/api/1.0/auth/token"
 TOKEN_KEY = "revolut:tokens"
 LOCK_KEY = "revolut:refresh_lock"
 
-cfg = load_config()
+cfg = load_config_from_directory(Path("src"), "generator.yaml")
 CERT_PATH, KEY_PATH = cfg['keys']['cert_path'], cfg['keys']['key_path']
 
 ####################################################################

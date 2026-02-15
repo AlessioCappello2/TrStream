@@ -42,14 +42,14 @@ The Stripe stack consists of:
     - `STRIPE_WEBHOOK_SECRET` - for the webhook signature verification
 
 ## Setup
-### 1. Login to Stripe CLI
+### Step 1: Login to Stripe CLI
 Open a terminal and authenticate:
 ```bash
 stripe login
 ```
 This opens your browser to authorize the CLI with your Stripe account.
 
-### 2. Get your Webhook Secret
+### Step 2: Get your Webhook Secret
 Start the Stripe CLI listener to obtain your webhook signing secret:
 ```bash
 stripe listen --forward-to http://localhost:8100/webhook
@@ -64,7 +64,7 @@ The CLI will output something like:
 
 **NOTE**: The Stripe CLI reuses the same webhook secret when you're logged into the same account. This secret persists across CLI restarts, so you only need to retrieve it once during initial setup.
 
-### 3. Configure Environment Variables
+### Step 3: Configure Environment Variables
 Navigate to `config/env/integrations/stripe` and remove the `.example` extension from the files. 
 
 Edit the files and, in particular, fill in your credentials:
@@ -172,6 +172,7 @@ For production:
 - Register a public webhook endpoint in [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
 - Use the persistent webhook secret you receive
 - Deploy webhook service behind HTTPS
+- Use secrets managements (not env files)
 
 ### Security
 - **Never** commit env files to version control

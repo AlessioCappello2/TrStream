@@ -220,27 +220,30 @@ services:
   revolut-setup:
     build: 
       context: .
-      dockerfile: ./docker/services/integrations/revolut/Dockerfile.setup
+      dockerfile: ./config/docker/integrations/revolut/Dockerfile.setup
     image: trstream-revolut-setup:latest
+    env_file:
+      - ./config/env/integrations/revolut/setup.env
     stdin_open: true
     tty: true
 
   revolut-generator:
     build:
       context: .
-      dockerfile: ./docker/services/integrations/revolut/Dockerfile.generator
+      dockerfile: ./config/docker/integrations/revolut/Dockerfile.generator
     image: trstream-revolut-generator:latest
+    env_file:
+      - ./config/env/integrations/revolut/generator.env
 
   revolut-worker:
     build:
       context: .
-      dockerfile: ./docker/services/integrations/revolut/Dockerfile.worker
+      dockerfile: ./config/docker/integrations/revolut/Dockerfile.worker
     image: trstream-revolut-worker:latest
     depends_on:
       kafka:
         condition: service_healthy
-    environment:
-      - BATCH_SIZE_LOG=400
-      - MAX_SEND_RETRIES=5
+    env_file:
+      - ./config/env/integrations/revolut/worker.env
     networks:
       - app-tier

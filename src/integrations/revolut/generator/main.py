@@ -3,16 +3,18 @@ import time
 import signal
 import random
 import requests
+from pathlib import Path
 
-from .auth.auth_service import get_valid_access_token
-from .config.load_config import load_config
-from .config.settings import settings
-from .config.logging_config import setup_logging
+from generator.config.settings import settings
+from generator.auth.auth_service import get_valid_access_token
+
+from shared.config.logging_config import setup_logging
+from shared.config.load_config import load_config_from_directory
 
 ####################################################################
 # Logging
 ####################################################################
-logger = setup_logging()
+logger = setup_logging(service_name="trstream.revolut.generator")
 logger.info("Revolut generator service starting...")
 
 ####################################################################
@@ -33,7 +35,7 @@ signal.signal(signal.SIGINT, handle_termination)
 ####################################################################
 REVOLUT_TRANSFER_API = "https://sandbox-b2b.revolut.com/api/1.0/transfer"
 
-cfg = load_config()
+cfg = load_config_from_directory(Path("src"), "generator.yaml")
 CERT_PATH, KEY_PATH = cfg['keys']['cert_path'], cfg['keys']['key_path']
 min_sleep_sec, max_sleep_sec = cfg['rate']['min_sleep_sec'], cfg['rate']['max_sleep_sec']
 min_amount, max_amount = cfg['amount']['min'], cfg['amount']['max']
@@ -43,6 +45,11 @@ retries = cfg['retries']
 session = requests.Session()
 session.cert = (CERT_PATH, KEY_PATH)
 session.verify = False
+
+# Suppress urllib3 warning
+import urllib3 
+from urllib3.exceptions import InsecureRequestWarning
+urllib3.disable_warnings(InsecureRequestWarning)
 
 # Main function
 def main():

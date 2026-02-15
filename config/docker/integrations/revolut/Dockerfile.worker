@@ -11,7 +11,13 @@ RUN uv sync --locked --no-dev --extra revolut-worker --active
 # Copy source code
 RUN mkdir -p src 
 COPY src/integrations/revolut/worker ./src/worker
-COPY src/integrations/revolut/revolut.env ./src/revolut.env
+
+# Copy shared modules
+COPY src/shared/config ./src/shared/config 
+COPY src/shared/kafka/producer.py ./src/shared/kafka/producer.py
+
+# Copy config files
+COPY config/yaml/integrations/revolut/worker.yaml ./src/worker.yaml
 
 # Python path
 ENV PYTHONPATH=/app/src

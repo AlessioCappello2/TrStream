@@ -23,7 +23,7 @@ for arg in "$@"; do
             ;;
         *)
             echo "Unknown argument: $arg"
-            echo "Usage: bash run_all.sh [producer=N] [consumer=M]"
+            echo "Usage: run_all.sh [producer=N] [consumer=M]"
             exit 1
             ;;
     esac
@@ -41,5 +41,5 @@ docker compose up -d \
     producer \
     consumer \
     querier \
-    streamlit \
+    editor \
     "${SCALE_ARGS[@]}"

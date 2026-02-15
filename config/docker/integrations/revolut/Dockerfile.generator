@@ -14,9 +14,16 @@ RUN uv sync --locked --no-dev --extra revolut-generator --active
 # Copy source code
 RUN mkdir -p src 
 COPY src/integrations/revolut/generator ./src/generator
+
+# Copy keys
 COPY keys/private.pem ./src/certs/private.pem
 COPY keys/certificate.pem ./src/certs/public.pem
-COPY src/integrations/revolut/revolut.env ./src/revolut.env
+
+# Copy shared modules
+COPY src/shared/config ./src/shared/config 
+
+# Copy config files
+COPY config/yaml/integrations/revolut/generator.yaml ./src/generator.yaml
 
 # Python path
 ENV PYTHONPATH=/app/src
