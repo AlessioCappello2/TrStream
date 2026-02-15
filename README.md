@@ -1,19 +1,13 @@
 # TrStream
+*A distributed real-time transaction processing pipeline*
+
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-required-blue.svg)](https://www.docker.com/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/AlessioCappello2/TrStream/graphs/commit-activity)
-
-**A distributed real-time transaction processing pipeline**
-
-[Quick Start](#quick-start) - [Architecture](#architecture) - [Features](#key-features) - [Integrations](#integrations)
-
 </div>
-
----
-
 <div align="center">
 
 ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
@@ -22,6 +16,11 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?logo=pydantic&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+
+</div>
+<div align="center">
+
+[Quick Start](#quick-start) - [Architecture](#architecture) - [Features](#key-features) - [Integrations](#integrations)
 
 </div>
 
