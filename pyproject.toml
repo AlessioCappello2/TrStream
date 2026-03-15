@@ -19,11 +19,13 @@ dependencies = [
 [project.optional-dependencies]
 producer = [
     "Faker==37.11.0",
-    "kafka-python==2.2.15"
+    "kafka-python==2.2.15",
+    "prometheus-client==0.24.1"
 ]
 
 consumer = [
-    "kafka-python==2.2.15"
+    "kafka-python==2.2.15",
+    "prometheus-client==0.24.1"
 ]
 
 querier = [

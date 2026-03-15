@@ -3,19 +3,13 @@
 
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Docker](https://img.shields.io/badge/docker-required-blue.svg)](https://www.docker.com/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/AlessioCappello2/TrStream/graphs/commit-activity)
-</div>
-<div align="center">
-
 ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
 ![MinIO](https://img.shields.io/badge/MinIO-C72E49?logo=minio&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-FFF000?logo=duckdb&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
-![Pydantic](https://img.shields.io/badge/Pydantic-E92063?logo=pydantic&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)
 
 </div>
 <div align="center">
@@ -81,7 +75,7 @@ All components are containerized and orchestrated with Docker Compose, allowing 
 - **Fully containerized local environment** with Docker Compose orchestration and explicit health checks
 
 ## Architecture
-![Architecture](images/pipeline/Architecture_v2.1.svg)
+![Architecture](images/pipeline/Architecture_v3.0.svg)
 
 ## Data flow
 - **Event sources**

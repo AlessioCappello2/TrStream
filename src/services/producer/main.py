@@ -1,6 +1,7 @@
 ####################################################################
 # IMPORTS #
 ####################################################################
+import os
 import sys
 import time
 import signal
@@ -15,11 +16,32 @@ from producer.config.settings import settings
 from producer.core.producer import FakerKafkaProducer
 from producer.core.transaction_generator import TransactionGenerator
 
+from prometheus_client import start_http_server, Counter
+
 ####################################################################
 # Logging
 ####################################################################
 logger = setup_logging(service_name="trstream.producer", suppress_loggers={"kafka": logging.CRITICAL})
 logger.info("Producer service starting...")
+
+####################################################################
+# Prometheus Metrics
+####################################################################
+start_http_server(9100)
+PRODUCER_ID = os.getenv("HOSTNAME", "unknown-producer")
+transactions_sent_total = Counter(
+    "transactions_sent_total",
+    "Total number of transactions sent to Kafka",
+    ["producer"]
+)
+producer_errors_total = Counter(
+    "producer_errors_total",
+    "Total number of errors encountered by the producer",
+    ["producer"]
+)
+
+transactions_counter = transactions_sent_total.labels(producer=PRODUCER_ID)
+errors_counter = producer_errors_total.labels(producer=PRODUCER_ID)
 
 ####################################################################
 # Handle SIGTERM/SIGINT Exceptions
@@ -61,7 +83,9 @@ def main():
             linger_ms=1
         )
     except Exception as e:
+        errors_counter.inc()
         logger.error(f"Kafka unavailable at startup. Exiting: {e}...")
+        time.sleep(10) # Sleep to allow metrics to be scraped before shutdown
         sys.exit(1)
     logger.info("Producer ready to send messages.")
 
@@ -81,10 +105,12 @@ def main():
             )
 
             counter += 1
+            transactions_counter.inc()
             time.sleep(random.uniform(min_sleep, max_sleep))
 
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
+        errors_counter.inc()
 
     finally:
         logger.info(f"Total transactions sent: {counter}. Shutting down producer...")
