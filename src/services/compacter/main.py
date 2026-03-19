@@ -2,8 +2,10 @@
 # IMPORTS #
 ####################################################################
 import boto3
+import argparse 
+
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from shared.config.logging_config import setup_logging
 from shared.config.load_config import load_config_from_directory
@@ -32,15 +34,25 @@ secret_key = settings.minio_secret_key
 
 # Main function
 def main():
+    now = datetime.now()
+    logger.info(f"Compacter job started at: {now.isoformat(timespec='seconds').replace('T', ' ')}")
 
-    logger.info(f"Compacter job started at: {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}")
+    ####################################################################
+    # Scheduled job
+    #################################################################### 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scheduled", action="store_true")
+
+    args = parser.parse_args()
+    is_scheduled = args.scheduled
+    logger.info(f"Running in {'scheduled' if is_scheduled else 'manual'} mode.")
     
     ####################################################################
     # Config reading
     #################################################################### 
     cfg = load_config_from_directory(Path("src"), "compacter.yaml")
     target_size = cfg.get("target_size_bytes", 256*1024*1024)  # 256 MB default
-    dates = resolve_dates(cfg)
+    dates = resolve_dates(cfg) if not is_scheduled else [now - timedelta(days=1)]  # If scheduled, process yesterday's data
     sources = cfg['compaction']['sources']
 
     ####################################################################

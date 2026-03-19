@@ -3,7 +3,9 @@
 ####################################################################
 import boto3
 import pyarrow as pa
-from datetime import datetime
+import argparse
+
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from shared.config.logging_config import setup_logging
@@ -33,14 +35,24 @@ secret_key = settings.minio_secret_key
 
 # Main function
 def main():
-        
-    logger.info(f"Processor job started at: {datetime.now().isoformat(timespec='seconds').replace('T', ' ')}")
+    now = datetime.now()     
+    logger.info(f"Processor job started at: {now.isoformat(timespec='seconds').replace('T', ' ')}")
+
+    ####################################################################
+    # Scheduled job
+    #################################################################### 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scheduled", action="store_true")
+
+    args = parser.parse_args()
+    is_scheduled = args.scheduled
+    logger.info(f"Running in {'scheduled' if is_scheduled else 'manual'} mode.")
     
     ####################################################################
     # Config reading
     #################################################################### 
     cfg = load_config_from_directory(Path("src"), "processor.yaml")
-    dates = resolve_dates(cfg)
+    dates = resolve_dates(cfg) if not is_scheduled else [now - timedelta(hours=1)]  # If scheduled, process previous hour's data
     sources = cfg['process']['sources']
 
     ####################################################################
@@ -68,13 +80,14 @@ def main():
     ####################################################################
     # Processing logic
     ####################################################################
+    hours = list(range(24)) if not is_scheduled else [now.hour - 1]
     for date in dates:
         for source in sources:
 
             daily_tables = []
 
-            # Process every hour of the day
-            for hour in range(24): 
+            # Process every hour of the day if not scheduled, otherwise just the previous hour
+            for hour in hours: 
                 prefix = (
                     f"source={source}/"
                     f"year={date.year}/month={date.month:02d}/day={date.day:02d}/"

@@ -276,3 +276,18 @@ services:
       - prometheus
     networks:
       - app-tier
+
+  ##########################
+  # ORCHESTRATION
+  ##########################
+  scheduler:
+    build:
+      context: .
+      dockerfile: ./config/docker/services/Dockerfile.scheduler
+    volumes:
+      - ./config/cron/crontab:/etc/crontab:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/app
+    working_dir: /app
+    networks:
+      - app-tier
