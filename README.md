@@ -1,7 +1,7 @@
 # TrStream
 *A distributed real-time transaction processing pipeline*
 
-<div align="center">
+<div align="left">
 
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
@@ -12,6 +12,14 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)
+
+</div>
+
+<div align="left">
+
+> **This is a hands-on exploration of distributed data systems.** <br>
+> Simulates how modern fintech platforms ingest, process and analyze transaction streams at scale.  <br>
+> Built to understand event-driven architectures, lakehouse storage patterns and observability practices with production-grade tooling.
 
 </div>
 
@@ -29,7 +37,7 @@ TrStream simulates a production-grade financial transaction pipeline that:
 
 ## Key Features
 
-- **Webhook ingestion** with signature veritification (Stripe, Revolut)
+- **Webhook ingestion** with signature verification (Stripe, Revolut)
 - **Synthetic producers** simulating transaction streams with configurable rates
 - **Kafka partitioning** for horizontal scalability
 - **Clear data lifecycle stages**: raw → processed → analytics
