@@ -3,6 +3,8 @@
 
 <div align="center">
 
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
 ![MinIO](https://img.shields.io/badge/MinIO-C72E49?logo=minio&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-FFF000?logo=duckdb&logoColor=black)
@@ -12,174 +14,118 @@
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)
 
 </div>
-<div align="center">
-
-[Quick Start](#quick-start) - [Architecture](#architecture) - [Features](#key-features) - [Integrations](#integrations)
-
-</div>
-
-## Table of Contents
-- [About](#about)
-- [Motivation](#motivation)
-- [Overview](#overview)
-- [Key features](#key-features)
-- [Architecture](#architecture)
-- [Data flow](#data-flow)
-- [Screenshots](#screenshots)
-- [Quick Start](#quick-start)
-- [Integrations](#integrations)
-- [Tech stack](#tech-stack)
-- [Local Access Points](#local-access-points)
-- [Roadmap](#roadmap)
-- [License](#license)
 
 ## About
-TrStream is a distributed data pipeline designed to simulate and process high-throughput financial transaction streams in real time.
+TrStream simulates a production-grade financial transaction pipeline that:
 
-The project explores the architectural patterns behind modern fintech and data engineering systems, including:
-- Event-driven ingestion
-- Scalable stream processing
-- Lakehouse-style storage
-- Analytical querying
-
-It was developed as a personal project to apply concepts from [Designing Data-Intensive Applications](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/) (Martin Kleppmann) with a strong focus on **system design** and data flow.
-
-## Motivation
-
-Modern financial platforms ingest millions of events per day and must:
-- Reliably process asynchronous events
-- Retain raw events for auditing and replay
-- Progressively optimize data layout for analytics
-- Remain horizontally scalable and loosely coupled
-
-TrStream models this workflow locally using open-source technologies, emphasizing clear data stages and realistic ingestion patterns.
-
-## Overview
-At a high level, the pipeline:
-1. Ingests transaction events from external systems (e.g. Stripe webhooks) and internal producers
-2. Buffers and distributes events via Kafka
-3. Persists immutable raw events in a data lake (Parquet on S3-compatible storage)
-4. Processes and reorganizes data into optimized analytical layouts
-5. Exposes a SQL query layer on analytics-ready data
-
-All components are containerized and orchestrated with Docker Compose, allowing horizontal scaling of producers and consumers.
-
-## Key features
-- **Event-driven ingestion** via webhooks and producers
-- **Kafka-based buffering** with horizontal scalability through partitioning
-- Clear separation of **data lifecycle stages**: raw → processed → analytics
-- **Immutable Parquet storage** for auditing and replay
-- **File compaction** and **layout optimization** for analytical workloads
-- **SQL querying** on object storage (Athena-like experience)
-- **Lightweight SQL editor** implemented with Streamlit
-- **Fully containerized local environment** with Docker Compose orchestration and explicit health checks
+- Ingests events from payment providers and synthetic producers
+- Streams through Kafka for buffering and decoupling
+- Stores data in a lakehouse architecture (raw, processed, analytics)
+- Exposes SQL queries over optimized Parquet files
+- Monitors performance with Prometheus and Grafana
 
 ## Architecture
-![Architecture](images/pipeline/Architecture_v3.0.svg)
+![Architecture](images/pipeline/Architecture_v3.1.svg)
 
-## Data flow
-- **Event sources**
-    - External providers (e.g. Stripe) deliver events through a webhook service
-    - Internal producers simulate transaction streams with configurable rates and distributions
-- **Kafka ingestion**
-    - All events are published to Kafka topics
-    - Kafka provides buffering, ordering, partitioning and backpressure handling
-    - Kafka UI exposes end-to-end observability of topics and consumers
-- **Consumers and storage**
-    - Kafka consumers persist events to MinIO (S3-compatible storage)
-    - Data flows through explicit lifecycle stages:
-        - **Raw**: immutable, append-only Parquet files mirroring incoming events
-        - **Processed**: cleaned and normalized data derived from raw events
-        - **Analytics**: compacted and query-optimized Parquet files
-- **Processing and compaction**
-    - A processor transforms raw data into cleaned and normalized datasets
-    - A compacter merges small files and optimizes layout for analytical queries
-    - Both services are schema- and source-aware, ensuring consistent and query-ready outputs
-- **Query and visualization**
-    - A query service exposes SQL access (DuckDB-based) over analytics data
-    - A Streamlit UI provides an interactive SQL editor for data exploration
+## Key Features
 
-## Screenshots
-
-**Kafka UI**: monitor topics, partitions, and consumer groups in real time
-
-![Kafka UI](images/screenshots/kafka_ui.png)
-
-**MinIO Console**: browse buckets, view file metadata, and manage storage
-
-![MinIO UI](images/screenshots/minio_ui.png)
-
-**SQL Editor**: write and execute SQL queries against analytics data
-
-![Editor Run](images/screenshots/editor_tab_run.png)
-
-![Editor Alias](images/screenshots/editor_tab_alias.png)
-
-
-## Quick Start
-
-### Prerequisites
-- Docker and Docker Compose installed locally
-- Python 3.10+ 
-
-### Launch the pipeline
-1. **Clone the repository:**
-```bash
-git clone https://github.com/AlessioCappello2/TrStream.git
-cd TrStream
-```
-
-2. **Build all images:**
-```bash
-scripts/scripts-cli/build.sh
-```
-
-3. **Start core services:**
-```bash
-scripts/scripts-cli/run.sh
-```
-
-4. **Start everything (including UI):**
-```bash
-scripts/scripts-cli/run_all.sh
-```
-
-5. **Access the services:**
-    - **Kafka UI**: http://localhost:8080
-    - **MinIO Console**: http://localhost:9001
-    - **SQL Query API**: http://localhost:8000
-    - **SQL Editor**: http://localhost:8501
-
-### Scaling
-
-Scale producers and consumers horizontally:
-```bash
-scripts/scripts-cli/run.sh producer=3 consumer=4
-```
-
-See [scripts documentation](scripts/scripts-cli/README.md) for more options.
+- **Webhook ingestion** with signature veritification (Stripe, Revolut)
+- **Synthetic producers** simulating transaction streams with configurable rates
+- **Kafka partitioning** for horizontal scalability
+- **Clear data lifecycle stages**: raw → processed → analytics
+- **SQL querying** on object storage with DuckDB
+- **Prometheus metrics** and **Grafana dashboards** for observability
 
 ## Integrations
 
-TrStream supports real-world payment provider integrations:
-
 ### Stripe
-- **Webhook ingestion** for payment events
-- Signature verification and validation
-- [Setup Guide](src/integrations/stripe/README.md)
+Real-time webhook events for payment transactions, with signature verification and validation ([Setup Guide](src/integrations/stripe/README.md)).
 
 ### Revolut
-- **Sandbox API integration** for transaction data
-- Redis-backed event queue and serverless webhook deployment with Vercel
-- [Setup Guide](src/integrations/revolut/README.md)
+Sandbox API + Redis queue + Vercel serverless webhook for transfers ([Setup Guide](src/integrations/revolut/README.md)).
 
-Each integration is independently deployable and configurable, allowing users to choose which data sources to include in their pipeline. 
+## Screenshots
+
+<details>
+<summary><b>Kafka UI</b> - Monitor topics, partitions and consumer groups</summary>
+
+![Kafka UI](images/screenshots/kafka_ui.png)
+</details>
+
+<details>
+<summary><b>MinIO Console</b> - Browse buckets, manage storage and file metadata</summary>
+
+![MinIO UI](images/screenshots/minio_ui.png)
+</details>
+
+<details>
+<summary><b>SQL Editor</b> - Interactive query interface</summary>
+
+![Editor Run](images/screenshots/editor_tab_run.png)
+![Editor Alias](images/screenshots/editor_tab_alias.png)
+</details>
+
+<details>
+<summary><b>Grafana Dashboard</b> - Metrics and performance</summary>
+
+![Grafana](images/screenshots/grafana.png)
+</details>
+
+## Prerequisites
+- Docker & Docker Compose
+- Python 3.10+ (for local script execution)
+
+## Quick Start
+```bash
+# 1. Clone
+git clone https://github.com/AlessioCappello2/TrStream.git && cd TrStream
+
+# 2. Setup environment variables (see .env.example in config/env/)
+cp config/env/services/producer.env.example config/env/services/producer.env
+# Edit .env with desired configuration
+
+# 3. Build (after having set up env variables)
+scripts/scripts-cli/build.sh
+
+# 4. Run everything
+scripts/scripts-cli/run_all.sh
+``` 
+
+## Local Access Points
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| **Kafka UI** | http://localhost:8080 | — |
+| **MinIO Console** | http://localhost:9001 | `admin` / `admin12345` |
+| **Grafana** | http://localhost:3000 | `admin` / `admin` |
+| **SQL Editor** | http://localhost:8501 | — |
+| **Query API** | http://localhost:8000/docs | — |
+| **Prometheus** | http://localhost:9090 | — |
+
+## Roadmap
+
+### Completed
+- [x] Kafka-based event streaming
+- [x] Multi-stage data lifecycle (raw → processed → analytics)
+- [x] DuckDB query layer with Streamlit SQL editor
+- [x] Stripe & Revolut integrations
+- [x] Prometheus metrics and Grafana dashboards for observability
+- [x] Custom scheduler for processing and compaction jobs
+
+### Possible Future additions
+- Additional payment provider integrations (e.g. Adyen, PayPal)
+- Real-time alerting and anomaly detection on transaction streams
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## Tech stack
-| Component     | Technology                   |
+| Component/Layer     | Technology                   |
 |---------------|------------------------------|
 | Ingestion     | Kafka, Webhooks              |
-| Messaging     | Kafka (Bitnami legacy image) |
+| Messaging     | Kafka  |
 | Storage       | MinIO (S3-compatible)        |
 | Processing    | Python, PyArrow, Boto3       |
 | Query engine  | DuckDB                       |
@@ -187,44 +133,4 @@ Each integration is independently deployable and configurable, allowing users to
 | Visualization | Streamlit                    |
 | Monitoring    | Kafka UI (Provectus Labs)    |
 | Orchestration | Docker Compose               |
-
-## Local Access Points
-
-| Component | URL |
-| --------- | --- |
-| Stripe Webhook | http://localhost:8100 |
-| Kafka UI | http://localhost:8080 |
-| MinIO Browser | http://localhost:9000 |
-| MinIO Console | http://localhost:9001 |
-| SQL Querier API | http://localhost:8000 |
-| Streamlit Editor | http://localhost:8501 |
-
-**Backend Services (no web interface):**
-- **Kafka**: `localhost:9092` (connect via Kafka clients)
-
-> **Tip:** Use Kafka UI to monitor Kafka topics and messages.
-
-## Roadmap
-
-### Completed
-- [x] Kafka-based event streaming
-- [x] Multi-stage data lifecycle (raw → processed → analytics)
-- [x] DuckDB query layer
-- [x] Streamlit SQL editor
-- [x] Stripe integration with webhook handling
-- [x] Revolut integration with sandbox API
-
-### Planned
-- [ ] **Observability**
-    - Prometheus metrics  
-    - Grafana dashboards
-- [ ] **Job scheduling**
-    - Airflow DAGs for processing and compaction
-
-### Future considerations
-- Additional payment provider integrations (e.g. Adyen, PayPal)
-- Real-time alerting and anomaly detection on transaction streams
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+| Performance  | Prometheus, Grafana          |
