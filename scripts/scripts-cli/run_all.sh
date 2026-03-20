@@ -42,4 +42,7 @@ docker compose up -d \
     consumer \
     querier \
     editor \
+    prometheus \
+    grafana \
+    scheduler \
     "${SCALE_ARGS[@]}"

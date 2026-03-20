@@ -1,6 +1,7 @@
 ####################################################################
 # IMPORTS #
 ####################################################################
+import os
 import sys
 import time
 import json
@@ -23,11 +24,32 @@ from consumer.core.consumer import SafeKafkaConsumer
 from consumer.core.writer import ConsumerS3ParquetWriter
 from consumer.core.validate import validate_and_normalize_event
 
+from prometheus_client import start_http_server, Counter
+
 ####################################################################
 # Logging
 ####################################################################
 logger = setup_logging(service_name="trstream.consumer", suppress_loggers={"kafka": logging.CRITICAL})
 logger.info("Consumer service starting...")
+
+####################################################################
+# Prometheus Metrics
+####################################################################
+start_http_server(9100)
+CONSUMER_ID = os.getenv("HOSTNAME", "unknown-consumer")
+messages_consumed_total = Counter(
+    "messages_consumed_total",
+    "Total number of messages consumed from Kafka",
+    ["consumer"]
+)
+consumer_errors_total = Counter(
+    "consumer_errors_total",
+    "Total number of errors encountered by the consumer",
+    ["consumer"]
+)
+
+messages_counter = messages_consumed_total.labels(consumer=CONSUMER_ID)
+errors_counter = consumer_errors_total.labels(consumer=CONSUMER_ID)
 
 ####################################################################
 # Handle SIGTERM/SIGINT Exceptions
@@ -82,7 +104,9 @@ def main():
             enable_auto_commit=False
         )
     except Exception as e:
+        errors_counter.inc()
         logger.error("Kafka unavailable at startup. Exiting...")
+        time.sleep(10) # Sleep to allow metrics to be scraped before shutdown
         sys.exit(1)
     consumer.subscribe(topics=[faker_topic, stripe_topic, revolut_topic])
     logger.info("Consumer ready, waiting for messages...")
@@ -125,9 +149,11 @@ def main():
                 try:
                     record, iso_dt, hr = validate_and_normalize_event(decoded)
                 except ValueError:
+                    errors_counter.inc()
                     continue
 
                 count += 1
+                messages_counter.inc()
                 records[(record['source'], iso_dt, hr)].append(record)
                 partition_offsets[tp] = msg.offset + 1
 

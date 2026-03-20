@@ -1,0 +1,5 @@
+# Processor every hour at :10
+10 * * * * docker compose -p trstream run --no-deps --rm processor python -m processor.main --scheduled
+
+# Compacter daily at 01:45
+45 1 * * * docker compose -p trstream run --no-deps --rm compacter python -m compacter.main --scheduled

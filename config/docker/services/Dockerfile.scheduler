@@ -1,0 +1,18 @@
+# Dockerfile.scheduler
+
+FROM alpine:3.19
+
+# Install dependencies
+RUN apk add --no-cache \
+    curl \
+    docker-cli \
+    docker-cli-compose
+
+# Install supercronic
+RUN curl -fsSLo /usr/local/bin/supercronic \
+    https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64 \
+    && chmod +x /usr/local/bin/supercronic
+
+WORKDIR /app
+
+CMD ["supercronic", "/etc/crontab"]
